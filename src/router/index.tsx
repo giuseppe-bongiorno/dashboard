@@ -7,6 +7,7 @@ import DashboardPage from '@/pages/DashboardPage';
 import ProfilePage from '@/pages/ProfilePage';
 import SettingsPage from '@/pages/SettingsPage';
 import GDPRPage from '@/pages/GDPRPage';
+import SystemHealthPage from '@/pages/SystemHealthPage';
 import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
 
 export const router = createBrowserRouter([
@@ -50,6 +51,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <MainLayout>
           <GDPRPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/system-health',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <SystemHealthPage />
         </MainLayout>
       </ProtectedRoute>
     ),

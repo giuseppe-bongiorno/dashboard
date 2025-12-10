@@ -28,6 +28,7 @@ import {
   LightMode,
   DarkMode,
   ChevronLeft,
+  Favorite,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks';
@@ -51,6 +52,7 @@ const navItems: NavItem[] = [
   { label: 'Profile', path: '/profile', icon: <Person /> },
   { label: 'Settings', path: '/settings', icon: <Settings /> },
   { label: 'GDPR & Privacy', path: '/gdpr', icon: <Security /> },
+  { label: 'System Health', path: '/system-health', icon: <Favorite /> },
 ];
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
