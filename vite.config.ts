@@ -1,26 +1,37 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@/components': path.resolve(__dirname, './src/components'),
-      '@/pages': path.resolve(__dirname, './src/pages'),
-      '@/hooks': path.resolve(__dirname, './src/hooks'),
-      '@/store': path.resolve(__dirname, './src/store'),
-      '@/services': path.resolve(__dirname, './src/services'),
-      '@/types': path.resolve(__dirname, './src/types'),
-      '@/utils': path.resolve(__dirname, './src/utils'),
-      '@/theme': path.resolve(__dirname, './src/theme'),
+      '@': '/src',
+      '@/components': '/src/components',
+      '@/pages': '/src/pages',
+      '@/hooks': '/src/hooks',
+      '@/store': '/src/store',
+      '@/services': '/src/services',
+      '@/types': '/src/types',
+      '@/utils': '/src/utils',
+      '@/theme': '/src/theme',
     },
   },
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/auth': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   build: {
     outDir: 'dist',

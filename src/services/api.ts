@@ -3,7 +3,8 @@ import { ApiResponse, ApiError } from '@/types';
 
 // API Configuration
 //const API_BASE_URL = 'https://test.myfamilydoc.it:443';
-const API_BASE_URL = 'http://localhost:8080';
+//const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = ''; // Empty to use Vite proxy
 const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 

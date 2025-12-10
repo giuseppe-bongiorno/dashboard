@@ -17,12 +17,18 @@ export const authService = {
     return apiRequest<AuthResponse>(async () => {
       const response = await apiClient.post('/auth/login', credentials);
       
-      // Store session ID if OTP is required
-      if (response.data.requiresOTP && response.data.sessionId) {
-        sessionStorage.setItem('otp_session', response.data.sessionId);
-      }
+      // Backend structure: { success, message, data }
+      const backendData = response.data;
       
-      return response;
+      // Transform to our AuthResponse format
+      return {
+        data: {
+          success: backendData.success,
+          message: backendData.message,
+          requiresOTP: backendData.success, // If login succeeds, OTP is required
+          email: credentials.email, // Save email for OTP step
+        }
+      };
     });
   },
 
@@ -44,30 +50,86 @@ export const authService = {
    */
   verifyOTP: async (data: OTPVerification): Promise<ApiResponse<AuthResponse>> => {
     return apiRequest<AuthResponse>(async () => {
-      const response = await apiClient.post('/auth/otp/verify', {
+      const response = await apiClient.post('/auth/verify-otp', {
         email: data.email,
         otp: data.otp,
-        sessionId: data.sessionId,
+        captchaToken: '6LegWncrAAAAAESDg7lvmNOj4RRaAIZHiYmygC9K', // Required by backend
       });
 
-      // Store tokens if verification successful
-      if (response.data.tokens) {
-        tokenManager.setAccessToken(response.data.tokens.accessToken);
-        tokenManager.setRefreshToken(response.data.tokens.refreshToken);
-        sessionStorage.removeItem('otp_session');
+      // Backend structure: { success, message, data: { token, email, userId, roles } }
+      const backendData = response.data;
+      
+      if (backendData.success && backendData.data?.token) {
+        // Store the JWT token
+        tokenManager.setAccessToken(backendData.data.token);
+        // Use same token as refresh token for now
+        tokenManager.setRefreshToken(backendData.data.token);
       }
 
-      return response;
+      // Transform to our AuthResponse format
+      return {
+        data: {
+          success: backendData.success,
+          message: backendData.message,
+          tokens: backendData.data?.token ? {
+            accessToken: backendData.data.token,
+            refreshToken: backendData.data.token,
+            expiresIn: 86400, // 24 hours
+          } : undefined,
+          user: backendData.data ? {
+            id: backendData.data.userId?.toString() || '',
+            email: backendData.data.email,
+            firstName: '', // Backend doesn't provide these
+            lastName: '',
+            role: backendData.data.roles?.[0]?.replace('ROLE_', '').toLowerCase() || 'user',
+            createdAt: new Date().toISOString(),
+          } : undefined,
+        }
+      };
     });
   },
 
   /**
    * Get current user profile
+   * If backend doesn't have a /me endpoint, we decode the JWT
    */
   getCurrentUser: async (): Promise<ApiResponse<User>> => {
-    return apiRequest<User>(async () => {
-      return await apiClient.get('/auth/me');
-    });
+    const token = tokenManager.getAccessToken();
+    
+    if (!token) {
+      return {
+        success: false,
+        error: {
+          message: 'No token available',
+          code: 'NO_TOKEN',
+        },
+      };
+    }
+
+    try {
+      // Decode JWT to get user info
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      
+      return {
+        success: true,
+        data: {
+          id: payload.userId?.toString() || payload.sub || '',
+          email: payload.email || payload.sub || '',
+          firstName: '', // Not in JWT
+          lastName: '',
+          role: payload.roles?.[0]?.replace('ROLE_', '').toLowerCase() || 'user',
+          createdAt: new Date(payload.iat * 1000).toISOString(),
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: 'Failed to decode token',
+          code: 'INVALID_TOKEN',
+        },
+      };
+    }
   },
 
   /**

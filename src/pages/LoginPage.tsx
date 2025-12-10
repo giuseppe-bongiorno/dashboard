@@ -39,6 +39,7 @@ const LoginPage: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [otpValue, setOtpValue] = useState(''); // Manual OTP state
 
   const {
     control: loginControl,
@@ -52,17 +53,6 @@ const LoginPage: React.FC = () => {
     },
   });
 
-  const {
-    control: otpControl,
-    handleSubmit: handleOTPSubmit,
-    formState: { errors: otpErrors },
-    reset: resetOTP,
-  } = useForm<{ otp: string }>({
-    defaultValues: {
-      otp: '',
-    },
-  });
-
   useEffect(() => {
     if (isAuthenticated) {
       const from = (location.state as LocationState)?.from?.pathname || '/';
@@ -72,9 +62,10 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (requiresOTP) {
+      console.log('✅ OTP required! Switching to step 2', { requiresOTP, loginEmail });
       setActiveStep(1);
     }
-  }, [requiresOTP]);
+  }, [requiresOTP, loginEmail]);
 
   useEffect(() => {
     if (error) {
@@ -84,20 +75,29 @@ const LoginPage: React.FC = () => {
   }, [error, showError, dispatch]);
 
   const onLoginSubmit = async (data: LoginCredentials) => {
-    await dispatch(loginWithPassword(data));
+    console.log('🔐 Submitting login...', { email: data.email });
+    const result = await dispatch(loginWithPassword(data));
+    console.log('🔐 Login result:', result);
   };
 
-  const onOTPSubmit = async (data: { otp: string }) => {
-    if (!sessionId || !loginEmail) {
+  const onOTPSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!loginEmail) {
       showError('Session expired. Please login again.');
       setActiveStep(0);
       return;
     }
 
+    if (!otpValue || otpValue.length !== 6) {
+      showError('Please enter a valid 6-digit OTP');
+      return;
+    }
+
     const otpData: OTPVerification = {
       email: loginEmail,
-      otp: data.otp,
-      sessionId,
+      otp: otpValue,
+      sessionId: sessionId || '',
     };
 
     await dispatch(verifyOTP(otpData));
@@ -105,7 +105,7 @@ const LoginPage: React.FC = () => {
 
   const handleBackToLogin = () => {
     setActiveStep(0);
-    resetOTP();
+    setOtpValue(''); // Reset OTP value
     dispatch(clearError());
   };
 
@@ -263,41 +263,27 @@ const LoginPage: React.FC = () => {
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleOTPSubmit(onOTPSubmit)} noValidate>
+            <form onSubmit={onOTPSubmit} noValidate>
               <Alert severity="info" sx={{ mb: 3 }}>
                 We've sent a verification code to <strong>{loginEmail}</strong>
               </Alert>
 
-              <Controller
-                name="otp"
-                control={otpControl}
-                rules={{
-                  required: 'OTP is required',
-                  pattern: {
-                    value: /^[0-9]{6}$/,
-                    message: 'OTP must be 6 digits',
-                  },
+              <TextField
+                label="Inserisci il codice OTP a 6 cifre"
+                type="text"
+                fullWidth
+                margin="normal"
+                value={otpValue}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                  setOtpValue(value);
                 }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Enter 6-digit OTP"
-                    fullWidth
-                    margin="normal"
-                    error={!!otpErrors.otp}
-                    helperText={otpErrors.otp?.message}
-                    autoComplete="one-time-code"
-                    autoFocus
-                    inputProps={{
-                      maxLength: 6,
-                      pattern: '[0-9]*',
-                      inputMode: 'numeric',
-                      'aria-label': 'One-time password',
-                      'aria-required': 'true',
-                      'aria-invalid': !!otpErrors.otp,
-                    }}
-                  />
-                )}
+                autoComplete="off"
+                autoFocus
+                helperText="Inserisci le 6 cifre ricevute via email"
+                inputProps={{
+                  maxLength: 6,
+                }}
               />
 
               <Button
@@ -305,7 +291,7 @@ const LoginPage: React.FC = () => {
                 variant="contained"
                 fullWidth
                 size="large"
-                disabled={isLoading}
+                disabled={isLoading || otpValue.length !== 6}
                 sx={{ mt: 3, mb: 2 }}
               >
                 {isLoading ? <CircularProgress size={24} /> : 'Verify OTP'}
