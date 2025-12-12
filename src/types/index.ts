@@ -1,13 +1,36 @@
+// User roles (matching backend: ROLE_ADMIN, ROLE_DEV, ROLE_DOC, ROLE_USER)
+export type UserRole = 'ADMIN' | 'DEV' | 'DOC' | 'USER';
+
 // User and Authentication Types
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'user' | 'manager';
+  role: UserRole;
+  permissions?: string[]; // Optional granular permissions
   createdAt: string;
   lastLogin?: string;
+  avatar?: string;
+  phone?: string;
+  department?: string; // For doctors/admins
 }
+
+// Role-based permissions helper
+export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
+  ADMIN: ['*'], // All permissions - Administrator
+  DEV: ['*', 'system_debug', 'view_logs', 'manage_config'], // All permissions + developer tools
+  DOC: ['view_patients', 'create_prescriptions', 'view_documents', 'create_appointments', 'manage_schedule', 'view_medical_records'],
+  USER: ['view_own_data', 'upload_documents', 'book_appointments', 'view_prescriptions'],
+};
+
+// Role display names for UI
+export const ROLE_DISPLAY_NAMES: Record<UserRole, string> = {
+  ADMIN: 'Administrator',
+  DEV: 'Developer',
+  DOC: 'Doctor',
+  USER: 'Patient',
+};
 
 export interface AuthTokens {
   accessToken: string;
@@ -33,12 +56,16 @@ export interface OTPVerification {
 }
 
 export interface AuthResponse {
-  success: boolean;
+  success?: boolean;
   sessionId?: string;
   tokens?: AuthTokens;
   user?: User;
   message?: string;
   requiresOTP?: boolean;
+  requiresOtp?: boolean; // Backend might use camelCase
+  token?: string; // Some backends return single token
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 // API Response Types

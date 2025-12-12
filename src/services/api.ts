@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse, ApiError } from '@/types';
 
@@ -5,6 +6,7 @@ import { ApiResponse, ApiError } from '@/types';
 //const API_BASE_URL = 'https://test.myfamilydoc.it:443';
 //const API_BASE_URL = 'http://localhost:8080';
 const API_BASE_URL = ''; // Empty to use Vite proxy
+//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.myfamilydoc.it:443';
 const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 

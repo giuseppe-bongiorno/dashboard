@@ -3,13 +3,20 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/hooks';
 import { fetchCurrentUser } from '@/store/slices/authSlice';
 import { authService } from '@/services/auth.service';
+import type { UserRole } from '@/types';
 import { Box, CircularProgress } from '@mui/material';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  allowedRoles?: UserRole[]; // If specified, only these roles can access
+  redirectTo?: string; // Custom redirect path
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  allowedRoles,
+  redirectTo = '/login',
+}) => {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const { isAuthenticated, isLoading, user } = useAppSelector((state) => state.auth);
@@ -48,8 +55,25 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated || !user) {
+    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+  }
+
+  // Check role-based access
+  if (allowedRoles && allowedRoles.length > 0) {
+    const hasAccess = allowedRoles.includes(user.role);
+    
+    if (!hasAccess) {
+      // Redirect to appropriate dashboard based on user's role
+      const roleDashboards: Record<UserRole, string> = {
+        ADMIN: '/admin',
+        DEV: '/dev',
+        DOC: '/doc',
+        USER: '/user',
+      };
+      
+      return <Navigate to={roleDashboards[user.role] || '/login'} replace />;
+    }
   }
 
   return <>{children}</>;

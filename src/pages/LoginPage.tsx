@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { showError } = useNotification();
   
-  const { isAuthenticated, isLoading, error, requiresOTP, sessionId, loginEmail } =
+  const { isAuthenticated, isLoading, error, requiresOTP, sessionId, loginEmail, user } =
     useAppSelector((state) => state.auth);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -54,11 +54,36 @@ const LoginPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const from = (location.state as LocationState)?.from?.pathname || '/';
-      navigate(from, { replace: true });
+    if (isAuthenticated && user) {
+      console.log('🔍 LoginPage redirect - User:', user);
+      console.log('🔍 User role:', user.role);
+      
+      // Redirect based on user role (matching backend: ROLE_ADMIN, ROLE_DEV, ROLE_DOC, ROLE_USER)
+      const roleDashboards: Record<string, string> = {
+        ADMIN: '/admin',
+        DEV: '/dev',
+        DOC: '/doc',
+        USER: '/user',
+        // Fallback for lowercase (if backend sends lowercase)
+        admin: '/admin',
+        dev: '/dev',
+        doc: '/doc',
+        user: '/user',
+      };
+
+      const targetPath = roleDashboards[user.role] || '/user';
+      console.log('🎯 Target path:', targetPath);
+      
+      const from = (location.state as LocationState)?.from?.pathname;
+      
+      // If user was trying to access a specific page, go there
+      // Otherwise, go to their role-specific dashboard
+      const finalPath = from || targetPath;
+      console.log('✅ Final redirect to:', finalPath);
+      
+      navigate(finalPath, { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, user, navigate, location]);
 
   useEffect(() => {
     if (requiresOTP) {

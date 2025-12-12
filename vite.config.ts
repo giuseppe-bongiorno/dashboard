@@ -20,18 +20,21 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    proxy: {
-      '/auth': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        secure: false,
-      },
+proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://test.myfamilydoc.it:443',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path,
+      },
+      '/auth': {
+        target: 'https://test.myfamilydoc.it:443',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path,
       },
     },
+  
   },
   build: {
     outDir: 'dist',

@@ -5,7 +5,7 @@ import {
   CardContent,
   Typography,
   Avatar,
-  Grid,
+  Stack,
   TextField,
   Button,
   Divider,
@@ -79,9 +79,9 @@ const ProfilePage: React.FC = () => {
         Manage your personal information and account settings
       </Typography>
 
-      <Grid container spacing={3}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
         {/* Profile Overview Card */}
-        <Grid item xs={12} md={4}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 33.333%' } }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 4 }}>
               <Avatar
@@ -135,10 +135,10 @@ const ProfilePage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Profile Edit Form */}
-        <Grid item xs={12} md={8}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 66.666%' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -153,61 +153,62 @@ const ProfilePage: React.FC = () => {
               </Box>
 
               <form onSubmit={handleSubmit(onSubmit)}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <Controller
-                      name="firstName"
-                      control={control}
-                      rules={{ required: 'First name is required' }}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="First Name"
-                          fullWidth
-                          disabled={!isEditing}
-                          error={!!errors.firstName}
-                          helperText={errors.firstName?.message}
-                          InputProps={{
-                            startAdornment: <Person sx={{ mr: 1, color: 'action.active' }} />,
-                          }}
-                        />
-                      )}
-                    />
-                  </Grid>
+                <Stack spacing={3}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                    <Box sx={{ flex: 1 }}>
+                      <Controller
+                        name="firstName"
+                        control={control}
+                        rules={{ required: 'First name is required' }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="First Name"
+                            fullWidth
+                            disabled={!isEditing}
+                            error={!!errors.firstName}
+                            helperText={errors.firstName?.message}
+                            InputProps={{
+                              startAdornment: <Person sx={{ mr: 1, color: 'action.active' }} />,
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
 
-                  <Grid item xs={12} sm={6}>
-                    <Controller
-                      name="lastName"
-                      control={control}
-                      rules={{ required: 'Last name is required' }}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Last Name"
-                          fullWidth
-                          disabled={!isEditing}
-                          error={!!errors.lastName}
-                          helperText={errors.lastName?.message}
-                          InputProps={{
-                            startAdornment: <Person sx={{ mr: 1, color: 'action.active' }} />,
-                          }}
-                        />
-                      )}
-                    />
-                  </Grid>
+                    <Box sx={{ flex: 1 }}>
+                      <Controller
+                        name="lastName"
+                        control={control}
+                        rules={{ required: 'Last name is required' }}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            label="Last Name"
+                            fullWidth
+                            disabled={!isEditing}
+                            error={!!errors.lastName}
+                            helperText={errors.lastName?.message}
+                            InputProps={{
+                              startAdornment: <Person sx={{ mr: 1, color: 'action.active' }} />,
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
+                  </Stack>
 
-                  <Grid item xs={12}>
-                    <Controller
-                      name="email"
-                      control={control}
-                      rules={{
-                        required: 'Email is required',
-                        pattern: {
-                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                          message: 'Invalid email address',
-                        },
-                      }}
-                      render={({ field }) => (
+                  <Controller
+                    name="email"
+                    control={control}
+                    rules={{
+                      required: 'Email is required',
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: 'Invalid email address',
+                      },
+                    }}
+                    render={({ field }) => (
                         <TextField
                           {...field}
                           label="Email Address"
@@ -222,35 +223,30 @@ const ProfilePage: React.FC = () => {
                         />
                       )}
                     />
-                  </Grid>
 
-                  <Grid item xs={12}>
-                    <Controller
-                      name="phone"
-                      control={control}
-                      render={({ field }) => (
-                        <TextField
-                          {...field}
-                          label="Phone Number (Optional)"
-                          fullWidth
-                          disabled={!isEditing}
-                        />
-                      )}
-                    />
-                  </Grid>
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        label="Phone Number (Optional)"
+                        fullWidth
+                        disabled={!isEditing}
+                      />
+                    )}
+                  />
 
-                  <Grid item xs={12}>
-                    <TextField
-                      label="User ID"
-                      value={user?.id || 'N/A'}
-                      fullWidth
-                      disabled
-                      InputProps={{
-                        startAdornment: <Badge sx={{ mr: 1, color: 'action.active' }} />,
-                      }}
-                    />
-                  </Grid>
-                </Grid>
+                  <TextField
+                    label="User ID"
+                    value={user?.id || 'N/A'}
+                    fullWidth
+                    disabled
+                    InputProps={{
+                      startAdornment: <Badge sx={{ mr: 1, color: 'action.active' }} />,
+                    }}
+                  />
+                </Stack>
 
                 {isEditing && (
                   <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
@@ -285,8 +281,8 @@ const ProfilePage: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
     </Box>
   );
 };

@@ -127,12 +127,14 @@ const authSlice = createSlice({
       .addCase(loginWithPassword.fulfilled, (state, action) => {
         state.isLoading = false;
         
-        if (action.payload.requiresOTP) {
+        const requiresOtp = action.payload?.requiresOTP || action.payload?.requiresOtp || false;
+        
+        if (requiresOtp) {
           state.requiresOTP = true;
           state.sessionId = action.payload.sessionId || null;
           state.loginEmail = action.payload.email || null;
         } else {
-          // Direct login without OTP
+          // Direct login without OTP (shouldn't happen based on your backend)
           state.user = action.payload.user || null;
           state.isAuthenticated = true;
           state.requiresOTP = false;
@@ -151,11 +153,22 @@ const authSlice = createSlice({
       })
       .addCase(verifyOTP.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user || null;
+        
+        // Handle different token response formats
+        const responseData = action.payload;
+        
+        console.log('✅ verifyOTP.fulfilled - Response data:', responseData);
+        console.log('✅ User from response:', responseData?.user);
+        console.log('✅ User role:', responseData?.user?.role);
+        
+        // Extract user data
+        state.user = responseData?.user || null;
         state.isAuthenticated = true;
         state.requiresOTP = false;
         state.sessionId = null;
         state.loginEmail = null;
+        
+        console.log('✅ Auth state updated - user:', state.user);
       })
       .addCase(verifyOTP.rejected, (state, action) => {
         state.isLoading = false;
@@ -169,8 +182,10 @@ const authSlice = createSlice({
       })
       .addCase(fetchCurrentUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
-        state.isAuthenticated = true;
+        if (action.payload) {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+        }
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -202,8 +217,10 @@ const authSlice = createSlice({
     // Refresh session
     builder
       .addCase(refreshSession.fulfilled, (state, action) => {
-        state.user = action.payload.user || state.user;
-        state.isAuthenticated = true;
+        if (action.payload) {
+          state.user = action.payload.user || state.user;
+          state.isAuthenticated = true;
+        }
       })
       .addCase(refreshSession.rejected, (state) => {
         state.user = null;

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Box,
-  Grid,
+  Stack,
   Card,
   CardContent,
   Typography,
@@ -143,17 +143,21 @@ const DashboardPage: React.FC = () => {
       </Box>
 
       {/* KPI Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        spacing={3} 
+        sx={{ mb: 4, flexWrap: 'wrap' }}
+      >
         {kpiData.map((kpi) => (
-          <Grid item xs={12} sm={6} lg={3} key={kpi.id}>
+          <Box key={kpi.id} sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', lg: '1 1 calc(25% - 18px)' } }}>
             <KPICard data={kpi} />
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Stack>
 
       {/* Charts Section */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} lg={8}>
+      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3} sx={{ mb: 3 }}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '2' } }}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
               Revenue Overview
@@ -170,9 +174,9 @@ const DashboardPage: React.FC = () => {
               <Typography>Chart placeholder - Integrate with charting library</Typography>
             </Box>
           </Paper>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} lg={4}>
+        <Box sx={{ flex: { xs: '1 1 100%', lg: '1' } }}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
               Recent Activity
@@ -211,58 +215,53 @@ const DashboardPage: React.FC = () => {
               ))}
             </Box>
           </Paper>
-        </Grid>
+        </Box>
+      </Stack>
 
-        <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom>
-              Quick Stats
+
+      <Paper sx={{ p: 3 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Quick Stats
+        </Typography>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={2} 
+          sx={{ mt: 1, flexWrap: 'wrap' }}
+        >
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, textAlign: 'center', p: 2 }}>
+            <Typography variant="h4" fontWeight={600} color="primary">
+              98.5%
             </Typography>
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" fontWeight={600} color="primary">
-                    98.5%
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Uptime
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" fontWeight={600} color="primary">
-                    1,234
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Active Sessions
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" fontWeight={600} color="primary">
-                    4.8
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Avg. Rating
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" fontWeight={600} color="primary">
-                    24/7
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Support
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-      </Grid>
+            <Typography variant="body2" color="text.secondary">
+              Uptime
+            </Typography>
+          </Box>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, textAlign: 'center', p: 2 }}>
+            <Typography variant="h4" fontWeight={600} color="primary">
+              1,234
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Active Sessions
+            </Typography>
+          </Box>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, textAlign: 'center', p: 2 }}>
+            <Typography variant="h4" fontWeight={600} color="primary">
+              4.8
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Avg. Rating
+            </Typography>
+          </Box>
+          <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }, textAlign: 'center', p: 2 }}>
+            <Typography variant="h4" fontWeight={600} color="primary">
+              24/7
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Support
+            </Typography>
+          </Box>
+        </Stack>
+      </Paper>
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import apiClient, { apiRequest, tokenManager } from './api';
-import {
+import type {
   LoginCredentials,
   OTPRequest,
   OTPVerification,
@@ -7,6 +7,9 @@ import {
   User,
   ApiResponse,
 } from '@/types';
+
+// Import UserRole separately to ensure TypeScript recognizes it
+import type { UserRole } from '@/types';
 
 export const authService = {
   /**
@@ -59,12 +62,19 @@ export const authService = {
       // Backend structure: { success, message, data: { token, email, userId, roles } }
       const backendData = response.data;
       
+      console.log('🔍 Backend response:', backendData);
+      console.log('🔍 Backend roles:', backendData.data?.roles);
+      
       if (backendData.success && backendData.data?.token) {
         // Store the JWT token
         tokenManager.setAccessToken(backendData.data.token);
         // Use same token as refresh token for now
         tokenManager.setRefreshToken(backendData.data.token);
       }
+
+      // Map role: ROLE_ADMIN → ADMIN
+      const mappedRole = (backendData.data.roles?.[0]?.replace('ROLE_', '') || 'USER') as UserRole;
+      console.log('🎯 Mapped role:', mappedRole);
 
       // Transform to our AuthResponse format
       return {
@@ -81,7 +91,8 @@ export const authService = {
             email: backendData.data.email,
             firstName: '', // Backend doesn't provide these
             lastName: '',
-            role: backendData.data.roles?.[0]?.replace('ROLE_', '').toLowerCase() || 'user',
+            // Map backend roles: ROLE_ADMIN → ADMIN, ROLE_DEV → DEV, ROLE_DOC → DOC, ROLE_USER → USER
+            role: mappedRole,
             createdAt: new Date().toISOString(),
           } : undefined,
         }
@@ -117,7 +128,8 @@ export const authService = {
           email: payload.email || payload.sub || '',
           firstName: '', // Not in JWT
           lastName: '',
-          role: payload.roles?.[0]?.replace('ROLE_', '').toLowerCase() || 'user',
+          // Map backend roles: ROLE_ADMIN → ADMIN, ROLE_DEV → DEV, ROLE_DOC → DOC, ROLE_USER → USER
+          role: (payload.roles?.[0]?.replace('ROLE_', '') || 'USER') as UserRole,
           createdAt: new Date(payload.iat * 1000).toISOString(),
         },
       };
@@ -165,18 +177,14 @@ export const authService = {
   },
 
   /**
-   * Logout and clear tokens
+   * Logout and clear tokens (client-side only)
+   * No backend call needed - JWT tokens are stateless
    */
   logout: async (): Promise<ApiResponse<void>> => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch (error) {
-      // Continue with logout even if API call fails
-      console.error('Logout API error:', error);
-    }
-
+    // Clear all client-side authentication data
     tokenManager.clearTokens();
     sessionStorage.clear();
+    localStorage.removeItem('otp_session');
 
     return {
       success: true,
