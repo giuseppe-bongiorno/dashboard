@@ -11,11 +11,11 @@ export interface Messaggio {
   contenuto: string;
   priorita: boolean;
   letto: boolean;
-  dataInvio: string;  // data_invio from DB
-  dataLettura?: string;  // data_lettura from DB
-  messaggioPadreId: number | null;  // messaggio_padre_id from DB
-  createdAt: string;  // created_at from DB
-  risposte?: Messaggio[];  // Populated by backend for thread endpoint
+  dataInvio: string;
+  dataLettura?: string;
+  messaggioPadreId: number | null;
+  createdAt: string;
+  risposte?: Messaggio[];
 }
 
 export interface CreaMessaggioRequest {
@@ -43,6 +43,7 @@ export interface MessaggiStats {
 export const messaggiService = {
   /**
    * Get all messages for a user (by destinatarioId)
+   * Maps to: GET /api/v1/messaggi/destinatario/{destinatarioId}
    */
   getMessaggi: async (destinatarioId: number): Promise<ApiResponse<Messaggio[]>> => {
     return apiRequest<Messaggio[]>(async () => {
@@ -53,16 +54,20 @@ export const messaggiService = {
 
   /**
    * Get unread message count
+   * Maps to: GET /api/v1/messaggi/destinatario/{destinatarioId}/conteggio-non-letti
+   * Backend returns Long directly, we wrap it in an object for consistency
    */
   getUnreadCount: async (destinatarioId: number): Promise<ApiResponse<{ count: number }>> => {
     return apiRequest<{ count: number }>(async () => {
       const response = await apiClient.get(`/api/v1/messaggi/destinatario/${destinatarioId}/conteggio-non-letti`);
-      return response;
+      // Backend returns a Long directly, wrap it
+      return { data: { count: response.data } };
     });
   },
 
   /**
    * Create new message
+   * Maps to: POST /api/v1/messaggi
    */
   sendMessaggio: async (data: CreaMessaggioRequest): Promise<ApiResponse<Messaggio>> => {
     return apiRequest<Messaggio>(async () => {
@@ -73,6 +78,7 @@ export const messaggiService = {
 
   /**
    * Reply to a message
+   * Maps to: POST /api/v1/messaggi/rispondi
    */
   sendRisposta: async (data: RispondiMessaggioRequest): Promise<ApiResponse<Messaggio>> => {
     return apiRequest<Messaggio>(async () => {
@@ -83,6 +89,7 @@ export const messaggiService = {
 
   /**
    * Mark message as read
+   * Maps to: PUT /api/v1/messaggi/dettaglio/{messaggioId}/segna-letto
    */
   markMessaggioAsRead: async (messaggioId: number): Promise<ApiResponse<void>> => {
     return apiRequest<void>(async () => {
@@ -93,30 +100,82 @@ export const messaggiService = {
 
   /**
    * Get message thread (message + replies)
+   * Maps to: GET /api/v1/messaggi/dettaglio/{messaggioId}/thread
+   * 
+   * IMPORTANT: Backend returns List<MessaggioResponse>, not a single message
+   * We need to reconstruct the thread structure on the frontend
    */
   getMessaggioThread: async (messaggioId: number): Promise<ApiResponse<Messaggio>> => {
     return apiRequest<Messaggio>(async () => {
       const response = await apiClient.get(`/api/v1/messaggi/dettaglio/${messaggioId}/thread`);
-      return response;
+      
+      // Backend returns an array of messages in the thread
+      // First message is the parent, rest are replies
+      const thread = response.data as Messaggio[];
+      
+      if (thread.length === 0) {
+        throw new Error('Thread vuoto');
+      }
+      
+      // Reconstruct the message with replies
+      const parentMessage = thread[0];
+      const replies = thread.slice(1);
+      
+      return {
+        data: {
+          ...parentMessage,
+          risposte: replies
+        }
+      };
     });
   },
 
   /**
-   * Delete message (if backend supports it)
+   * Delete message
+   * Maps to: DELETE /api/v1/messaggi/dettaglio/{messaggioId}
    */
   eliminaMessaggio: async (messageId: number): Promise<ApiResponse<void>> => {
     return apiRequest<void>(async () => {
-      const response = await apiClient.delete(`/api/v1/messaggi/${messageId}`);
+      const response = await apiClient.delete(`/api/v1/messaggi/dettaglio/${messageId}`);
       return response;
     });
   },
 
   /**
    * Get all users (for recipient selection)
+   * NOTE: This endpoint may need to be implemented in the backend
+   * Possible alternatives:
+   * - GET /api/v1/users (needs to be created)
+   * - GET /api/v1/auth/users (if exists in AuthController)
+   * - Use a dedicated UserController endpoint
    */
   getUtenti: async (): Promise<ApiResponse<Array<{ id: number; nome: string; email: string }>>> => {
     return apiRequest<Array<{ id: number; nome: string; email: string }>>(async () => {
+      // TODO: Verify this endpoint exists in your backend
+      // You may need to create it or use a different endpoint
       const response = await apiClient.get('/api/v1/users');
+      return response;
+    });
+  },
+
+  /**
+   * Get single message by ID
+   * Maps to: GET /api/v1/messaggi/dettaglio/{messaggioId}
+   */
+  getMessaggioById: async (messaggioId: number): Promise<ApiResponse<Messaggio>> => {
+    return apiRequest<Messaggio>(async () => {
+      const response = await apiClient.get(`/api/v1/messaggi/dettaglio/${messaggioId}`);
+      return response;
+    });
+  },
+
+  /**
+   * Get messages sent by a user (as mittente)
+   * Maps to: GET /api/v1/messaggi/mittente/{mittenteId}
+   */
+  getMessaggiInviati: async (mittenteId: number): Promise<ApiResponse<Messaggio[]>> => {
+    return apiRequest<Messaggio[]>(async () => {
+      const response = await apiClient.get(`/api/v1/messaggi/mittente/${mittenteId}`);
       return response;
     });
   },
