@@ -40,6 +40,14 @@ export interface MessaggiStats {
   totaleRicevuti: number;
 }
 
+export interface UserListDTO {
+  id: number;
+  username: string;
+  email: string;
+  displayName: string;
+  enabled: boolean;
+}
+
 export const messaggiService = {
   /**
    * Get all messages for a user (by destinatarioId)
@@ -142,18 +150,24 @@ export const messaggiService = {
   },
 
   /**
-   * Get all users (for recipient selection)
-   * NOTE: This endpoint may need to be implemented in the backend
-   * Possible alternatives:
-   * - GET /api/v1/users (needs to be created)
-   * - GET /api/v1/auth/users (if exists in AuthController)
-   * - Use a dedicated UserController endpoint
+   * Get all active users (for recipient selection)
+   * Maps to: GET /api/v1/users
+   * Returns users sorted by username
    */
-  getUtenti: async (): Promise<ApiResponse<Array<{ id: number; nome: string; email: string }>>> => {
-    return apiRequest<Array<{ id: number; nome: string; email: string }>>(async () => {
-      // TODO: Verify this endpoint exists in your backend
-      // You may need to create it or use a different endpoint
+  getUtenti: async (): Promise<ApiResponse<UserListDTO[]>> => {
+    return apiRequest<UserListDTO[]>(async () => {
       const response = await apiClient.get('/api/v1/users');
+      return response;
+    });
+  },
+
+  /**
+   * Get all users including disabled ones (ADMIN only)
+   * Maps to: GET /api/v1/users/all
+   */
+  getAllUtenti: async (): Promise<ApiResponse<UserListDTO[]>> => {
+    return apiRequest<UserListDTO[]>(async () => {
+      const response = await apiClient.get('/api/v1/users/all');
       return response;
     });
   },

@@ -39,7 +39,7 @@ import {
   Outbox,
 } from '@mui/icons-material';
 import { useAppSelector, useNotification } from '@/hooks';
-import messaggiService, { Messaggio, CreaMessaggioRequest } from '@/services/messaggi.service';
+import messaggiService, { Messaggio, CreaMessaggioRequest, UserListDTO } from '@/services/messaggi.service';
 import { formatDistanceToNow, isValid } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -98,10 +98,10 @@ const AdminMessagingPage: React.FC = () => {
   const [selectedMessage, setSelectedMessage] = useState<Messaggio | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [replyOpen, setReplyOpen] = useState(false);
-  const [utenti, setUtenti] = useState<Array<{ id: number; nome: string; email: string }>>([]);
+  const [utenti, setUtenti] = useState<UserListDTO[]>([]);
 
   // Form
-  const [destinatario, setDestinatario] = useState<{ id: number; nome: string; email: string } | null>(null);
+  const [destinatario, setDestinatario] = useState<UserListDTO | null>(null);
   const [oggetto, setOggetto] = useState('');
   const [contenuto, setContenuto] = useState('');
   const [priorita, setPriorita] = useState(false);
@@ -598,9 +598,20 @@ const AdminMessagingPage: React.FC = () => {
           <Stack spacing={3} sx={{ mt: 1 }}>
             <Autocomplete
               options={utenti}
-              getOptionLabel={(option) => `${option.nome} (${option.email})`}
+              getOptionLabel={(option) => option.displayName}
               value={destinatario}
               onChange={(_, newValue) => setDestinatario(newValue)}
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderOption={(props, option) => (
+                <li {...props} key={option.id}>
+                  <Box>
+                    <Typography variant="body1">{option.username}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {option.email}
+                    </Typography>
+                  </Box>
+                </li>
+              )}
               renderInput={(params) => (
                 <TextField {...params} label="Destinatario" required />
               )}
