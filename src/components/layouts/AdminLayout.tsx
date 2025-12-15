@@ -62,6 +62,7 @@ const AdminLayout: React.FC = () => {
     { label: 'Admin Dashboard', path: '/admin', icon: <Dashboard /> },
     { label: 'User Management', path: '/admin/users', icon: <People />, badge: 3 },
     { label: 'Messages', path: '/admin/messages', icon: <Email /> },
+    { label: 'Push Notifications', path: '/admin/notifications', icon: <Notifications /> },
     { label: 'System Analytics', path: '/admin/analytics', icon: <BarChart /> },
     { label: 'Security & Audit', path: '/admin/security', icon: <Security /> },
     { label: 'System Health', path: '/admin/health', icon: <Favorite /> },

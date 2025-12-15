@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
-
+import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
 // Layouts
 import AdminLayout from '@/components/layouts/AdminLayout';
 import DevLayout from '@/components/layouts/DevLayout';
@@ -74,6 +74,10 @@ export const multiRoleRouter = createBrowserRouter([
         path: 'messages',
         element: <AdminMessagingPage />,
       },
+      {
+      path: 'notifications', // <-- AGGIUNGI QUESTA RIGA
+      element: <AdminNotificationsPage />,
+    },
     ],
   },
 
