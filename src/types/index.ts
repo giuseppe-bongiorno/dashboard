@@ -179,6 +179,57 @@ export interface ChartDataPoint {
   messages: number;
 }
 
+// User Management Types
+export interface UserManagement {
+  id: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  enabled: boolean;
+  emailVerified: boolean;
+  otpVerified: boolean;
+  pushEnabled: boolean;
+  anonymized: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastLoginAt?: string;
+  lastLoginIp?: string;
+  emailVerifiedAt?: string;
+  deletedAt?: string;
+  deletionReason?: string;
+}
+
+export interface UserFilters {
+  search?: string;
+  role?: UserRole | 'ALL';
+  status?: 'enabled' | 'disabled' | 'deleted' | 'ALL';
+  emailVerified?: boolean | 'ALL';
+}
+
+export interface UserStats {
+  total: number;
+  active: number;
+  byRole: {
+    patients: number;
+    doctors: number;
+    admins: number;
+  };
+  // User Management additional fields
+  inactive?: number;
+  deleted?: number;
+  byRoleDetailed?: {
+    admin: number;
+    dev: number;
+    doc: number;
+    user: number;
+  };
+}
+
+export interface UserAction {
+  type: 'enable' | 'disable' | 'delete' | 'verify_email' | 'reset_password' | 'view_details';
+  userId: string;
+}
+
 // GDPR Types
 export interface ConsentPreferences {
   analytics: boolean;

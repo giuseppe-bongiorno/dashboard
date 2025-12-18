@@ -15,6 +15,7 @@ import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
 
 // Admin Pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import UserManagementPage from '@/pages/admin/UserManagementPage';
 
 // Common Pages (for other roles)
 import DashboardPage from '@/pages/DashboardPage';
@@ -51,7 +52,7 @@ export const multiRoleRouter = createBrowserRouter([
       },
       {
         path: 'users',
-        element: <DashboardPage />,
+        element: <UserManagementPage />, // ✅ USER MANAGEMENT PAGE
       },
       {
         path: 'analytics',
