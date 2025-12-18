@@ -48,6 +48,7 @@ import {
   People,
   PersonOff,
   VerifiedUser,
+  SwapHoriz,
 } from '@mui/icons-material';
 import { useDocumentTitle, useNotification } from '@/hooks';
 import { ROLE_DISPLAY_NAMES, UserRole, UserManagement, UserFilters, UserStats } from '@/types';
@@ -76,6 +77,8 @@ const UserManagementPage: React.FC = () => {
 
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [changeRoleDialogOpen, setChangeRoleDialogOpen] = useState(false);
+  const [newRole, setNewRole] = useState<UserRole>('USER');
   const [actionLoading, setActionLoading] = useState(false);
 
   // Fetch data
@@ -214,6 +217,35 @@ const UserManagementPage: React.FC = () => {
   const handleDeleteClick = () => {
     handleMenuClose();
     setDeleteDialogOpen(true);
+  };
+
+  const handleChangeRoleClick = () => {
+    if (selectedUser) {
+      setNewRole(selectedUser.role);
+    }
+    handleMenuClose();
+    setChangeRoleDialogOpen(true);
+  };
+
+  const handleChangeRoleConfirm = async () => {
+    if (!selectedUser) return;
+    setActionLoading(true);
+    setChangeRoleDialogOpen(false);
+
+    try {
+      const response = await userManagementService.changeRole(selectedUser.id, newRole);
+      if (response.success) {
+        showSuccess(`Ruolo cambiato in ${ROLE_DISPLAY_NAMES[newRole]} con successo`);
+        fetchData();
+      } else {
+        showError(response.error?.message || 'Errore durante il cambio ruolo');
+      }
+    } catch (error) {
+      showError('Errore durante il cambio ruolo');
+    } finally {
+      setActionLoading(false);
+      setSelectedUser(null);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -554,6 +586,9 @@ const UserManagementPage: React.FC = () => {
             <Email sx={{ mr: 1 }} /> Verifica Email
           </MenuItem>
         )}
+        <MenuItem onClick={handleChangeRoleClick}>
+          <SwapHoriz sx={{ mr: 1 }} /> Cambia Ruolo
+        </MenuItem>
         <MenuItem onClick={handleResetPassword}>
           <Key sx={{ mr: 1 }} /> Reset Password
         </MenuItem>
@@ -561,6 +596,64 @@ const UserManagementPage: React.FC = () => {
           <Delete sx={{ mr: 1 }} /> Elimina Utente
         </MenuItem>
       </Menu>
+
+      {/* Change Role Dialog */}
+      <Dialog open={changeRoleDialogOpen} onClose={() => setChangeRoleDialogOpen(false)}>
+        <DialogTitle>Cambia Ruolo Utente</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 3 }}>
+            Seleziona il nuovo ruolo per <strong>{selectedUser?.username}</strong>
+          </DialogContentText>
+          <FormControl fullWidth>
+            <InputLabel>Nuovo Ruolo</InputLabel>
+            <Select
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value as UserRole)}
+              label="Nuovo Ruolo"
+            >
+              <MenuItem value="ADMIN">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="ADMIN" color="error" size="small" />
+                  <Typography variant="body2">Administrator</Typography>
+                </Box>
+              </MenuItem>
+              <MenuItem value="DEV">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="DEV" color="info" size="small" />
+                  <Typography variant="body2">Developer</Typography>
+                </Box>
+              </MenuItem>
+              <MenuItem value="DOC">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="DOC" color="success" size="small" />
+                  <Typography variant="body2">Dottore</Typography>
+                </Box>
+              </MenuItem>
+              <MenuItem value="USER">
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip label="USER" color="warning" size="small" />
+                  <Typography variant="body2">Paziente</Typography>
+                </Box>
+              </MenuItem>
+            </Select>
+          </FormControl>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            Attenzione: Il cambio di ruolo è irreversibile e potrebbe modificare i permessi dell'utente.
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setChangeRoleDialogOpen(false)}>Annulla</Button>
+          <Button 
+            onClick={handleChangeRoleConfirm} 
+            color="primary" 
+            variant="contained" 
+            autoFocus
+            disabled={newRole === selectedUser?.role}
+          >
+            Conferma Cambio
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

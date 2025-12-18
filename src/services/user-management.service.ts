@@ -476,6 +476,31 @@ export const userManagementService = {
       };
     }
   },
+
+  /**
+   * Change user role
+   */
+  changeRole: async (id: string, newRole: UserRole): Promise<ApiResponse<void>> => {
+    await delay(400);
+
+    try {
+      // Use id parameter to identify the user being modified
+      void id;
+      // Mock success
+      return {
+        success: true,
+        message: `User role changed to ${newRole} successfully`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          message: 'Failed to change user role',
+          code: 'CHANGE_ROLE_ERROR',
+        },
+      };
+    }
+  },
 };
 
 export default userManagementService;

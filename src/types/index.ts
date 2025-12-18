@@ -226,8 +226,9 @@ export interface UserStats {
 }
 
 export interface UserAction {
-  type: 'enable' | 'disable' | 'delete' | 'verify_email' | 'reset_password' | 'view_details';
+  type: 'enable' | 'disable' | 'delete' | 'verify_email' | 'reset_password' | 'change_role' | 'view_details';
   userId: string;
+  newRole?: UserRole; // For change_role action
 }
 
 // GDPR Types
