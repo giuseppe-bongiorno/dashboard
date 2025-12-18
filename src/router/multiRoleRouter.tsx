@@ -13,7 +13,10 @@ import LoginPage from '@/pages/LoginPage';
 //import RoleTestPage from '@/pages/RoleTestPage';
 import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
 
-// Common Pages
+// Admin Pages
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+
+// Common Pages (for other roles)
 import DashboardPage from '@/pages/DashboardPage';
 import SystemHealthPage from '@/pages/SystemHealthPage';
 import AdminMessagingPage from '@/pages/admin/AdminMessagingPage';
@@ -44,7 +47,7 @@ export const multiRoleRouter = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <AdminDashboardPage />, // ✅ NUOVA DASHBOARD ADMIN
       },
       {
         path: 'users',
@@ -75,9 +78,9 @@ export const multiRoleRouter = createBrowserRouter([
         element: <AdminMessagingPage />,
       },
       {
-      path: 'notifications', // <-- AGGIUNGI QUESTA RIGA
-      element: <AdminNotificationsPage />,
-    },
+        path: 'notifications',
+        element: <AdminNotificationsPage />,
+      },
     ],
   },
 

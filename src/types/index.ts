@@ -93,6 +93,92 @@ export interface KPIData {
   icon?: string;
 }
 
+// Dashboard Statistics Types
+export interface DashboardStats {
+  users: UserStats;
+  documents: DocumentStats;
+  messages: MessageStats;
+  notifications: NotificationStats;
+  system: SystemStats;
+}
+
+export interface UserStats {
+  total: number;
+  active: number;
+  byRole: {
+    patients: number;
+    doctors: number;
+    admins: number;
+  };
+  newThisMonth: number;
+  trend: number; // percentage
+}
+
+export interface DocumentStats {
+  total: number;
+  byType: {
+    glicemia: number;
+    pressione: number;
+    certificati: number;
+    ricette: number;
+    vaccini: number;
+    visite: number;
+    referti: number;
+  };
+  uploadedThisWeek: number;
+  trend: number;
+}
+
+export interface MessageStats {
+  total: number;
+  activeConversations: number;
+  lastWeek: number;
+  trend: number;
+}
+
+export interface NotificationStats {
+  sent: number;
+  delivered: number;
+  failed: number;
+  openRate: number;
+  trend: number;
+}
+
+export interface SystemStats {
+  uptime: number; // percentage
+  activeDevices: number;
+  storageUsed: number; // GB
+  storageTotal: number; // GB
+  apiCalls24h: number;
+}
+
+export interface HealthAlert {
+  id: string;
+  type: 'glicemia' | 'pressione' | 'scadenza_certificato' | 'scadenza_vaccino';
+  severity: 'critical' | 'warning' | 'info';
+  userId: string;
+  userName: string;
+  message: string;
+  value?: string;
+  timestamp: string;
+}
+
+export interface RecentActivity {
+  id: string;
+  type: 'document_upload' | 'user_registration' | 'message' | 'certificate_issued' | 'alert';
+  description: string;
+  user?: string;
+  timestamp: string;
+  icon?: string;
+}
+
+export interface ChartDataPoint {
+  date: string;
+  documents: number;
+  users: number;
+  messages: number;
+}
+
 // GDPR Types
 export interface ConsentPreferences {
   analytics: boolean;
