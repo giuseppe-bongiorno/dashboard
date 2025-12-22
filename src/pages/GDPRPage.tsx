@@ -10,11 +10,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  FormGroup,
   FormControlLabel,
   Checkbox,
   Alert,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
@@ -37,11 +35,11 @@ const GDPRPage: React.FC = () => {
   useDocumentTitle('GDPR & Privacy - MyFamilyDoc');
   
   const { user } = useAppSelector((state) => state.auth);
-  const { showSuccess, showError, showInfo } = useNotification();
+  const { showSuccess, showError } = useNotification();
 
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteConfirmed, setDeleteConfirmed] = useState(false);
+  const [, setDeleteConfirmed] = useState(false);
 
   const {
     control: deleteControl,

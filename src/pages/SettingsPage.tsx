@@ -11,7 +11,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Divider,
   Button,
 } from '@mui/material';
 import { Notifications, Language, Palette, Lock } from '@mui/icons-material';

@@ -71,7 +71,6 @@ const getIcon = (iconName: string) => {
 };
 
 const KPICard: React.FC<{ data: KPIData }> = ({ data }) => {
-  const isPositive = data.change >= 0;
   const trendColor = data.trend === 'up' ? 'success.main' : 'error.main';
 
   return (

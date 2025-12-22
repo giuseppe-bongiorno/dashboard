@@ -231,6 +231,34 @@ export interface UserAction {
   newRole?: UserRole; // For change_role action
 }
 
+// Telegram Types
+export interface TelegramMessage {
+  id: string;
+  botToken: string;
+  chatId: string;
+  message: string;
+  status: 'PENDING' | 'SENT' | 'FAILED';
+  telegramMessageId?: number;
+  sentAt?: string;
+  errorMessage?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramSendRequest {
+  botToken: string;
+  chatId: string;
+  message: string;
+}
+
+export interface TelegramStats {
+  total: number;
+  sent: number;
+  failed: number;
+  pending: number;
+}
+
 // GDPR Types
 export interface ConsentPreferences {
   analytics: boolean;

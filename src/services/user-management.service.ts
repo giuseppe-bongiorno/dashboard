@@ -366,6 +366,7 @@ export const userManagementService = {
    * Enable user
    */
   enableUser: async (id: string): Promise<ApiResponse<void>> => {
+     void id;
     await delay(300);
 
     try {
@@ -389,6 +390,7 @@ export const userManagementService = {
    * Disable user
    */
   disableUser: async (id: string): Promise<ApiResponse<void>> => {
+     void id;
     await delay(300);
 
     try {
@@ -412,6 +414,8 @@ export const userManagementService = {
    * Delete user (soft delete)
    */
   deleteUser: async (id: string, reason?: string): Promise<ApiResponse<void>> => {
+     void id;
+     void reason;
     await delay(400);
 
     try {
@@ -435,6 +439,7 @@ export const userManagementService = {
    * Verify user email
    */
   verifyEmail: async (id: string): Promise<ApiResponse<void>> => {
+     void id;
     await delay(300);
 
     try {
@@ -458,6 +463,7 @@ export const userManagementService = {
    * Reset user password
    */
   resetPassword: async (id: string): Promise<ApiResponse<void>> => {
+     void id;
     await delay(300);
 
     try {

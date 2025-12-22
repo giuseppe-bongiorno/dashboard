@@ -32,6 +32,7 @@ import {
   Security,
   Favorite,
   Email,
+  Telegram,
 } from '@mui/icons-material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/hooks';
@@ -63,6 +64,7 @@ const AdminLayout: React.FC = () => {
     { label: 'User Management', path: '/admin/users', icon: <People />, badge: 3 },
     { label: 'Messages', path: '/admin/messages', icon: <Email /> },
     { label: 'Push Notifications', path: '/admin/notifications', icon: <Notifications /> },
+    { label: 'Telegram Sender', path: '/admin/telegram', icon: <Telegram /> },
     { label: 'System Analytics', path: '/admin/analytics', icon: <BarChart /> },
     { label: 'Security & Audit', path: '/admin/security', icon: <Security /> },
     { label: 'System Health', path: '/admin/health', icon: <Favorite /> },

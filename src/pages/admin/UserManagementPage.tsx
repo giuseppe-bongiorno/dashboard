@@ -35,7 +35,6 @@ import {
 } from '@mui/material';
 import {
   Search,
-  FilterList,
   MoreVert,
   PersonAdd,
   CheckCircle,
@@ -269,7 +268,7 @@ const UserManagementPage: React.FC = () => {
     }
   };
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
 

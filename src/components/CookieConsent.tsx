@@ -14,7 +14,6 @@ import {
   Divider,
 } from '@mui/material';
 import { gdprService } from '@/services/gdpr.service';
-import { ConsentPreferences } from '@/types';
 
 const CookieConsent: React.FC = () => {
   const [open, setOpen] = useState(false);

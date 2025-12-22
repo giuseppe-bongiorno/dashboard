@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Stack,
   Card,
   CardContent,
   Typography,
@@ -22,23 +21,16 @@ import {
   Description,
   Message,
   Notifications,
-  Storage,
   Refresh,
   Warning,
   CheckCircle,
   Info,
   PersonAdd,
   UploadFile,
-  LocalHospital,
-  Block,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -50,8 +42,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useAppSelector, useDocumentTitle, useNotification } from '@/hooks';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useNavigate } from 'react-router-dom';
 import dashboardService from '@/services/dashboard.service';
 import type {
   DashboardStats,
@@ -476,7 +466,7 @@ const DashboardPage: React.FC = () => {
                   nameKey="type"
                   label
                 >
-                  {documentDistribution.map((entry, index) => (
+                  {documentDistribution.map((_entry, index) => (
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>

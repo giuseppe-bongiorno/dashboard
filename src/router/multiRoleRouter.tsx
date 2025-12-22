@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
@@ -21,6 +20,7 @@ import UserManagementPage from '@/pages/admin/UserManagementPage';
 import DashboardPage from '@/pages/DashboardPage';
 import SystemHealthPage from '@/pages/SystemHealthPage';
 import AdminMessagingPage from '@/pages/admin/AdminMessagingPage';
+import TelegramSenderPage from '@/pages/admin/TelegramSenderPage';
 
 export const multiRoleRouter = createBrowserRouter([
   // ====================================
@@ -81,6 +81,10 @@ export const multiRoleRouter = createBrowserRouter([
       {
         path: 'notifications',
         element: <AdminNotificationsPage />,
+      },
+      {
+        path: 'telegram',
+        element: <TelegramSenderPage />,
       },
     ],
   },

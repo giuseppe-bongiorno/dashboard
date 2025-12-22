@@ -23,16 +23,12 @@ import {
   DialogContent,
   DialogActions,
   Autocomplete,
-  FormControlLabel,
-  Switch,
-  Tooltip,
   CircularProgress,
   Accordion,
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
 import {
-  Notifications,
   Send,
   NotificationsActive,
   Close,
@@ -42,7 +38,6 @@ import {
   ExpandMore,
   Badge,
   Devices,
-  Group,
   Person,
 } from '@mui/icons-material';
 import { useAppSelector, useNotification } from '@/hooks';
@@ -50,7 +45,7 @@ import notificationService, { NotificationRequest } from '@/services/notificatio
 import messaggiService, { UserListDTO } from '@/services/messaggi.service';
 
 const AdminNotificationsPage: React.FC = () => {
-  const { user } = useAppSelector((state) => state.auth);
+  useAppSelector((state) => state.auth);
   const { showSuccess, showError } = useNotification();
 
   // State

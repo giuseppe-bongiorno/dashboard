@@ -28,7 +28,6 @@ import {
   Switch,
 } from '@mui/material';
 import {
-  Email,
   Send,
   Reply,
   Delete,

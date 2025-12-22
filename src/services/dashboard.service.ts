@@ -279,7 +279,7 @@ export const dashboardService = {
   /**
    * Get chart data for overview
    */
-  getChartData: async (days: number = 30): Promise<ApiResponse<ChartDataPoint[]>> => {
+  getChartData: async (_days: number = 30): Promise<ApiResponse<ChartDataPoint[]>> => {
     await delay(400);
 
     try {
