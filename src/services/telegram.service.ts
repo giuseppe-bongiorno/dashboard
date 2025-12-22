@@ -1,31 +1,91 @@
+
+import apiClient, { apiRequest } from './api';
+import { ApiResponse } from '@/types';
+/* =========================
+   Type definitions
+========================= */
+
+export interface TelegramMessage {
+  id: string;
+  botToken: string;
+  chatId: string;
+  message: string;
+  status: 'SENT' | 'FAILED' | 'PENDING';
+  telegramMessageId?: number;
+  sentAt?: string;
+  errorMessage?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TelegramSendRequest {
+  botToken: string;
+  chatId: string;
+  message: string;
+}
+
+export interface TelegramStats {
+  total: number;
+  sent: number;
+  failed: number;
+  pending: number;
+}
+
+/* =========================
+   Telegram Service
+========================= */
+
+export const telegramService = {
+  /**
+   * Send telegram message
+   */
+  sendMessage: async (
+    request: TelegramSendRequest
+  ): Promise<ApiResponse<TelegramMessage>> =>
+    apiRequest(() =>
+      apiClient.post('/admin/telegram/send', request)
+    ),
+
+  /**
+   * Get all telegram messages
+   */
+  getMessages: async (): Promise<ApiResponse<TelegramMessage[]>> =>
+    apiRequest(() =>
+      apiClient.get('/admin/telegram/messages')
+    ),
+
+  /**
+   * Get telegram statistics
+   */
+  getStats: async (): Promise<ApiResponse<TelegramStats>> =>
+    apiRequest(() =>
+      apiClient.get('/admin/telegram/stats')
+    ),
+
+  /**
+   * Retry failed message
+   */
+  retryMessage: async (id: string): Promise<ApiResponse<void>> =>
+    apiRequest(() =>
+      apiClient.post(`/admin/telegram/messages/${id}/retry`)
+    ),
+
+  /**
+   * Delete message
+   */
+  deleteMessage: async (id: string): Promise<ApiResponse<void>> =>
+    apiRequest(() =>
+      apiClient.delete(`/admin/telegram/messages/${id}`)
+    ),
+};
+
+export default telegramService;
+
+/** MOCK: commentare sopra e udare codice sotto */
+/**
 import { ApiResponse } from '@/types';
 
-
-
-
-/** va integrato questo:
- * export const telegramService = {
-  sendMessage: async (request: TelegramSendRequest) => 
-    apiRequest(() => apiClient.post('/admin/telegram/send', request)),
-  
-  getMessages: async () => 
-    apiRequest(() => apiClient.get('/admin/telegram/messages')),
-  
-  getStats: async () => 
-    apiRequest(() => apiClient.get('/admin/telegram/stats')),
-  
-  retryMessage: async (id: string) => 
-    apiRequest(() => apiClient.post(`/admin/telegram/messages/${id}/retry`)),
-  
-  deleteMessage: async (id: string) => 
-    apiRequest(() => apiClient.delete(`/admin/telegram/messages/${id}`)),
-};
- * 
- * */
-
-
-
-// Type definitions
 interface TelegramMessage {
   id: string;
   botToken: string;
@@ -192,9 +252,7 @@ const delay = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, m
 
 // Telegram Service
 export const telegramService = {
-  /**
-   * Get all telegram messages
-   */
+ 
   getMessages: async (): Promise<ApiResponse<TelegramMessage[]>> => {
     await delay(400);
 
@@ -216,9 +274,7 @@ export const telegramService = {
     }
   },
 
-  /**
-   * Get telegram statistics
-   */
+ 
   getStats: async (): Promise<ApiResponse<TelegramStats>> => {
     await delay(200);
 
@@ -241,9 +297,7 @@ export const telegramService = {
     }
   },
 
-  /**
-   * Send telegram message
-   */
+  
   sendMessage: async (request: TelegramSendRequest): Promise<ApiResponse<TelegramMessage>> => {
     await delay(800);
 
@@ -278,9 +332,7 @@ export const telegramService = {
     }
   },
 
-  /**
-   * Retry failed message
-   */
+ 
   retryMessage: async (id: string): Promise<ApiResponse<void>> => {
      void id;
     await delay(600);
@@ -301,9 +353,7 @@ export const telegramService = {
     }
   },
 
-  /**
-   * Delete message
-   */
+  
   deleteMessage: async (id: string): Promise<ApiResponse<void>> => {
      void id;
     await delay(300);
@@ -326,3 +376,4 @@ export const telegramService = {
 };
 
 export default telegramService;
+*/
