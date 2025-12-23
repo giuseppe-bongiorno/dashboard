@@ -1,0 +1,65 @@
+name: Deploy Frontend
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Display build output
+        run: |
+          echo "Build completed!"
+          ls -la dist/
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            if [ -d "/var/www/myfamilydoc" ]; then
+              sudo cp -r /var/www/myfamilydoc /var/www/myfamilydoc.backup.$(date +%Y%m%d_%H%M%S)
+            fi
+            rm -rf /tmp/frontend-deploy
+            mkdir -p /tmp/frontend-deploy
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "/tmp/frontend-deploy"
+          strip_components: 1
+      - name: Move files to web directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo mkdir -p /var/www/myfamilydoc
+            sudo cp -r /tmp/frontend-deploy/* /var/www/myfamilydoc/
+            sudo chown -R www-data:www-data /var/www/myfamilydoc
+            sudo chmod -R 755 /var/www/myfamilydoc
+            sudo find /var/www/myfamilydoc -type f -exec chmod 644 {} \;
+            rm -rf /tmp/frontend-deploy
+            echo "Deploy completed!"
+            ls -lah /var/www/myfamilydoc/
+      - name: Success
+        if: success()
+        run: |
+          echo "Deploy successful!"
+          echo "Visit: https://test.myfamilydoc.it"
