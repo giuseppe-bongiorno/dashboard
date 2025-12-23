@@ -14,10 +14,10 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve la build con Nginx
-FROM nginx:alpine
+#FROM nginx:alpine
 
 # Copia i file buildati da React/Vite in Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+#COPY --from=build /app/dist /usr/share/nginx/html
 #COPY --from=build /app/dist /var/www/myfamilydoc
 
 
@@ -25,7 +25,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Espone la porta 80
-EXPOSE 80
+#EXPOSE 80
 
 # Avvia Nginx in foreground
-CMD ["nginx", "-g", "daemon off;"]
+#CMD ["nginx", "-g", "daemon off;"]
