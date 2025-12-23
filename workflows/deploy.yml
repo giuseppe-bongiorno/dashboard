@@ -1,97 +1,95 @@
-name Deploy Frontend
+name: Deploy Frontend
 
-on
-  push
-    branches [ test ]
-  workflow_dispatch
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-jobs
-  deploy
-    runs-on ubuntu-latest
-    
-    steps
-    # 1. Checkout code
-    - name 📥 Checkout code
-      uses actionscheckout@v4
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-    # 2. Setup Node.js
-    - name 🔧 Setup Node.js
-      uses actionssetup-node@v4
-      with
-        node-version '20'
-        cache 'npm'
+    steps:
+      # 1️⃣ Checkout del codice
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # 3. Install dependencies
-    - name 📦 Install dependencies
-      run npm ci
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
-    # 4. Build
-    - name 🔨 Build
-      run npm run build
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: npm ci
 
-    # 5. Display build output
-    - name 📊 Display build output
-      run 
-        echo Build completed!
-        ls -la dist
+      # 4️⃣ Build del progetto
+      - name: Build
+        run: npm run build
 
-    # 6. Deploy to server via SSH
-    - name 🚀 Deploy to server
-      uses appleboyssh-action@master
-      with
-        host ${{ secrets.SERVER_HOST }}
-        username ${{ secrets.SERVER_USER }}
-        key ${{ secrets.SSH_PRIVATE_KEY }}
-        script 
-          # Backup precedente
-          if [ -d varwwwmyfamilydoc ]; then
-            sudo cp -r varwwwmyfamilydoc varwwwmyfamilydoc.backup.$(date +%Y%m%d_%H%M%S)
-          fi
-          
-          # Pulisci directory temporanea
-          rm -rf tmpfrontend-deploy
-          mkdir -p tmpfrontend-deploy
+      # 5️⃣ Debug della cartella build
+      - name: Check build output
+        run: |
+          echo "Contenuto della cartella dist:"
+          ls -lah dist/
 
-    # 7. Copy files to server
-    - name 📤 Copy files to server
-      uses appleboyscp-action@master
-      with
-        host ${{ secrets.SERVER_HOST }}
-        username ${{ secrets.SERVER_USER }}
-        key ${{ secrets.SSH_PRIVATE_KEY }}
-        source dist
-        target tmpfrontend-deploy
-        strip_components 1
+      # 6️⃣ Preparazione deploy sul server
+      - name: Prepare server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Creazione cartella temporanea per il deploy..."
+            rm -rf /tmp/frontend-deploy || true
+            mkdir -p /tmp/frontend-deploy
 
-    # 8. Move files to final location
-    - name 📂 Move files to web directory
-      uses appleboyssh-action@master
-      with
-        host ${{ secrets.SERVER_HOST }}
-        username ${{ secrets.SERVER_USER }}
-        key ${{ secrets.SSH_PRIVATE_KEY }}
-        script 
-          # Crea directory se non esiste
-          sudo mkdir -p varwwwmyfamilydoc
-          
-          # Copia nuovi file
-          sudo cp -r tmpfrontend-deploy varwwwmyfamilydoc
-          
-          # Imposta permessi
-          sudo chown -R www-datawww-data varwwwmyfamilydoc
-          sudo chmod -R 755 varwwwmyfamilydoc
-          sudo find varwwwmyfamilydoc -type f -exec chmod 644 {} ;
-          
-          # Cleanup
-          rm -rf tmpfrontend-deploy
-          
-          # Verifica
-          echo ✅ Deploy completed!
-          ls -lah varwwwmyfamilydoc
+            # Backup se esiste la cartella precedente
+            if [ -d "/var/www/myfamilydoc" ]; then
+              sudo cp -r /var/www/myfamilydoc /var/www/myfamilydoc.backup.$(date +%Y%m%d_%H%M%S) || true
+            fi
 
-    # 9. Notification
-    - name ✅ Success
-      if success()
-      run 
-        echo 🎉 Deploy successful!
-        echo 🌐 Visit httpstest.myfamilydoc.it
+      # 7️⃣ Copia dei file sul server
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "dist/*"
+          target: "/tmp/frontend-deploy"
+          strip_components: 1
+
+      # 8️⃣ Spostamento e permessi nella cartella web
+      - name: Deploy files to web directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo mkdir -p /var/www/myfamilydoc
+
+            if [ "$(ls -A /tmp/frontend-deploy)" ]; then
+              sudo cp -r /tmp/frontend-deploy/* /var/www/myfamilydoc/
+            fi
+
+            sudo chown -R www-data:www-data /var/www/myfamilydoc
+            sudo find /var/www/myfamilydoc -type d -exec chmod 755 {} \;
+            sudo find /var/www/myfamilydoc -type f -exec chmod 644 {} \;
+
+            # Pulizia cartella temporanea
+            rm -rf /tmp/frontend-deploy
+
+            echo "Deploy completato!"
+            ls -lah /var/www/myfamilydoc/
+
+      # 9️⃣ Success message
+      - name: Deploy success
+        if: success()
+        run: |
+          echo "Deploy eseguito con successo!"
+          echo "Visita: https://test.myfamilydoc.it"
