@@ -1,4 +1,4 @@
-# Enterprise Dashboard - MyFamilyDoc
+# Enterprise Dashboard - MyFamilyDoc.
 
 A production-ready, GDPR-compliant enterprise dashboard built with React, TypeScript, Redux Toolkit, and Material-UI.
 
