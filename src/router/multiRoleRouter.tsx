@@ -1,26 +1,20 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
-// Layouts
 import AdminLayout from '@/components/layouts/AdminLayout';
 import DevLayout from '@/components/layouts/DevLayout';
 import DocLayout from '@/components/layouts/DocLayout';
 import UserLayout from '@/components/layouts/UserLayout';
-
-// Public Pages
-import LoginPage from '@/pages/LoginPage';
-//import RoleTestPage from '@/pages/RoleTestPage';
-import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
-
-// Admin Pages
-import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
-import UserManagementPage from '@/pages/admin/UserManagementPage';
-
-// Common Pages (for other roles)
-import DashboardPage from '@/pages/DashboardPage';
-import SystemHealthPage from '@/pages/SystemHealthPage';
+import AdminNotificationsPage from '@/pages/admin/AdminNotificationsPage';
+import SystemHealthPage from '@/pages/admin/SystemHealthPage';
 import AdminMessagingPage from '@/pages/admin/AdminMessagingPage';
 import TelegramSenderPage from '@/pages/admin/TelegramSenderPage';
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import UserManagementPage from '@/pages/admin/UserManagementPage';
+import DashboardPage from '@/pages/DashboardPage';
+// Public Pages
+import LoginPage from '@/pages/LoginPage';
+import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
+
 
 export const multiRoleRouter = createBrowserRouter([
   // ====================================
