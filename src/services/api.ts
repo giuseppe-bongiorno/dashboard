@@ -3,8 +3,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { ApiResponse, ApiError } from '@/types';
 
 // API Configuration
-//const API_BASE_URL = 'https://test.myfamilydoc.it:443';
-//const API_BASE_URL = 'http://localhost:8080';
+
 //const API_BASE_URL = ''; // Empty to use Vite proxy
 //const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.myfamilydoc.it:443';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''; // ✅ pulito e dev/prod compatibile

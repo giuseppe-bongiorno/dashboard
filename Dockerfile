@@ -18,6 +18,8 @@ FROM nginx:alpine
 
 # Copia i file buildati da React/Vite in Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
+#COPY --from=build /app/dist /var/www/myfamilydoc
+
 
 # Copia eventuale config personalizzata Nginx (opzionale)
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
