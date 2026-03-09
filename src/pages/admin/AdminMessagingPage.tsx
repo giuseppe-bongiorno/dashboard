@@ -65,10 +65,32 @@ interface ThreadSummary {
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Helper function to parse date strings correctly as UTC and return a Date object.
+ * This ensures that when 'format' (from date-fns) is used, it converts the UTC time
+ * to the user's Local Time correctly.
+ * 
+ * If the backend sends dates without timezone info (e.g., "2023-10-27T10:00:00"),
+ * we assume they are UTC by appending 'Z'. If they already have 'Z' or offset, we use them as is.
+ */
+const parseDate = (dateString: string | undefined): Date => {
+  if (!dateString) return new Date(NaN); // Invalid Date
+  const str = dateString.trim();
+  
+  // Check if timezone info is already present (Z or +HH:MM)
+  const hasTimezone = str.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(str);
+  
+  // If no timezone, assume UTC by appending 'Z', forcing new Date() to parse it as UTC.
+  // Then date-fns will format this UTC instant into the user's local timezone.
+  const normalizedString = hasTimezone ? str : `${str}Z`;
+  
+  return new Date(normalizedString);
+};
+
 /** Format a date as readable time, like WhatsApp */
 const formatMessageTime = (dateString: string | undefined): string => {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  const date = parseDate(dateString);
   if (!isValid(date)) return '';
   return format(date, 'HH:mm', { locale: it });
 };
@@ -76,7 +98,7 @@ const formatMessageTime = (dateString: string | undefined): string => {
 /** Format a date for the thread list sidebar */
 const formatThreadDate = (dateString: string | undefined): string => {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  const date = parseDate(dateString);
   if (!isValid(date)) return '';
 
   if (isToday(date)) return format(date, 'HH:mm', { locale: it });
@@ -87,7 +109,7 @@ const formatThreadDate = (dateString: string | undefined): string => {
 
 /** Format a date for the day separator inside the chat */
 const formatDaySeparator = (dateString: string): string => {
-  const date = new Date(dateString);
+  const date = parseDate(dateString);
   if (!isValid(date)) return '';
 
   if (isToday(date)) return 'Oggi';
@@ -97,8 +119,8 @@ const formatDaySeparator = (dateString: string): string => {
 
 /** Check if two dates are on different calendar days */
 const isDifferentDay = (a: string, b: string): boolean => {
-  const dA = new Date(a);
-  const dB = new Date(b);
+  const dA = parseDate(a);
+  const dB = parseDate(b);
   return (
     dA.getFullYear() !== dB.getFullYear() ||
     dA.getMonth() !== dB.getMonth() ||
@@ -110,14 +132,14 @@ const isDifferentDay = (a: string, b: string): boolean => {
  * Normalize thread data from the API.
  * The backend returns List<MessaggioResponse> (Messaggio[]).
  * The service tries to reconstruct it as a single Messaggio with risposte[],
- * but depending on how apiRequest<T> infers the generic, the component
+ * but depending on how apiRequest infers the generic, the component
  * may receive either Messaggio[] or Messaggio. This helper handles both.
  */
 const normalizeThreadData = (data: Messaggio | Messaggio[]): Messaggio => {
   if (Array.isArray(data)) {
     if (data.length === 0) throw new Error('Thread vuoto');
     const sorted = [...data].sort(
-      (a, b) => new Date(a.dataInvio).getTime() - new Date(b.dataInvio).getTime()
+      (a, b) => parseDate(a.dataInvio).getTime() - parseDate(b.dataInvio).getTime()
     );
     const parent = sorted[0];
     const replies = sorted.slice(1);
@@ -516,7 +538,7 @@ const ChatView: React.FC<ChatViewProps> = ({
       msgs.push(...thread.risposte);
     }
     return msgs.sort(
-      (a, b) => new Date(a.dataInvio).getTime() - new Date(b.dataInvio).getTime()
+      (a, b) => parseDate(a.dataInvio).getTime() - parseDate(b.dataInvio).getTime()
     );
   }, [thread]);
 
@@ -855,7 +877,7 @@ const AdminMessagingPage: React.FC = () => {
       const threads: ThreadSummary[] = parentMessages.map((parent) => {
         const replies = childrenByParent.get(parent.id) || [];
         const allInThread = [parent, ...replies].sort(
-          (a, b) => new Date(a.dataInvio).getTime() - new Date(b.dataInvio).getTime()
+          (a, b) => parseDate(a.dataInvio).getTime() - parseDate(b.dataInvio).getTime()
         );
         const lastMessage = allInThread[allInThread.length - 1];
 
@@ -876,8 +898,8 @@ const AdminMessagingPage: React.FC = () => {
       // Sort by last message date descending (most recent first)
       threads.sort(
         (a, b) =>
-          new Date(b.lastMessage.dataInvio).getTime() -
-          new Date(a.lastMessage.dataInvio).getTime()
+          parseDate(b.lastMessage.dataInvio).getTime() -
+          parseDate(a.lastMessage.dataInvio).getTime()
       );
 
       return threads;
