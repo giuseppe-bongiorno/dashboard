@@ -130,16 +130,16 @@ const UserManagementPage: React.FC = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedUser(null);
   };
 
   const handleEnableUser = async () => {
     if (!selectedUser) return;
+    const userId = Number(selectedUser.id);
     setActionLoading(true);
     handleMenuClose();
 
     try {
-      const response = await userManagementService.enableUser(selectedUser.id);
+      const response = await userManagementService.enableUser(userId);
       if (response.success) {
         showSuccess('Utente abilitato con successo');
         fetchData();
@@ -150,16 +150,18 @@ const UserManagementPage: React.FC = () => {
       showError('Errore durante l\'abilitazione dell\'utente');
     } finally {
       setActionLoading(false);
+      setSelectedUser(null);
     }
   };
 
   const handleDisableUser = async () => {
     if (!selectedUser) return;
+    const userId = Number(selectedUser.id);
     setActionLoading(true);
     handleMenuClose();
 
     try {
-      const response = await userManagementService.disableUser(selectedUser.id);
+      const response = await userManagementService.disableUser(userId);
       if (response.success) {
         showSuccess('Utente disabilitato con successo');
         fetchData();
@@ -170,16 +172,18 @@ const UserManagementPage: React.FC = () => {
       showError('Errore durante la disabilitazione dell\'utente');
     } finally {
       setActionLoading(false);
+      setSelectedUser(null);
     }
   };
 
   const handleVerifyEmail = async () => {
     if (!selectedUser) return;
+    const userId = Number(selectedUser.id);
     setActionLoading(true);
     handleMenuClose();
 
     try {
-      const response = await userManagementService.verifyEmail(selectedUser.id);
+      const response = await userManagementService.verifyEmail(userId);
       if (response.success) {
         showSuccess('Email verificata con successo');
         fetchData();
@@ -190,16 +194,18 @@ const UserManagementPage: React.FC = () => {
       showError('Errore durante la verifica dell\'email');
     } finally {
       setActionLoading(false);
+      setSelectedUser(null);
     }
   };
 
   const handleResetPassword = async () => {
     if (!selectedUser) return;
+    const userId = Number(selectedUser.id);
     setActionLoading(true);
     handleMenuClose();
 
     try {
-      const response = await userManagementService.resetPassword(selectedUser.id);
+      const response = await userManagementService.resetPassword(userId);
       if (response.success) {
         showSuccess('Email di reset password inviata');
         fetchData();
@@ -210,6 +216,7 @@ const UserManagementPage: React.FC = () => {
       showError('Errore durante il reset della password');
     } finally {
       setActionLoading(false);
+      setSelectedUser(null);
     }
   };
 
@@ -232,7 +239,7 @@ const UserManagementPage: React.FC = () => {
     setChangeRoleDialogOpen(false);
 
     try {
-      const response = await userManagementService.changeRole(selectedUser.id, newRole);
+      const response = await userManagementService.changeRole(Number(selectedUser.id), newRole);
       if (response.success) {
         showSuccess(`Ruolo cambiato in ${ROLE_DISPLAY_NAMES[newRole]} con successo`);
         fetchData();
@@ -253,7 +260,7 @@ const UserManagementPage: React.FC = () => {
     setDeleteDialogOpen(false);
 
     try {
-      const response = await userManagementService.deleteUser(selectedUser.id, 'Deleted by admin');
+      const response = await userManagementService.deleteUser(Number(selectedUser.id), 'Deleted by admin');
       if (response.success) {
         showSuccess('Utente eliminato con successo');
         fetchData();
@@ -570,7 +577,7 @@ const UserManagementPage: React.FC = () => {
       </Paper>
 
       {/* Action Menu */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => { setAnchorEl(null); setSelectedUser(null); }}>
         {selectedUser?.enabled ? (
           <MenuItem onClick={handleDisableUser}>
             <Cancel sx={{ mr: 1 }} /> Disabilita Utente
@@ -597,7 +604,7 @@ const UserManagementPage: React.FC = () => {
       </Menu>
 
       {/* Change Role Dialog */}
-      <Dialog open={changeRoleDialogOpen} onClose={() => setChangeRoleDialogOpen(false)}>
+      <Dialog open={changeRoleDialogOpen} onClose={() => { setChangeRoleDialogOpen(false); setSelectedUser(null); }}>
         <DialogTitle>Cambia Ruolo Utente</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 3 }}>
@@ -641,7 +648,7 @@ const UserManagementPage: React.FC = () => {
           </Alert>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setChangeRoleDialogOpen(false)}>Annulla</Button>
+          <Button onClick={() => { setChangeRoleDialogOpen(false); setSelectedUser(null); }}>Annulla</Button>
           <Button 
             onClick={handleChangeRoleConfirm} 
             color="primary" 
@@ -655,7 +662,7 @@ const UserManagementPage: React.FC = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog open={deleteDialogOpen} onClose={() => { setDeleteDialogOpen(false); setSelectedUser(null); }}>
         <DialogTitle>Conferma Eliminazione</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -665,7 +672,7 @@ const UserManagementPage: React.FC = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Annulla</Button>
+          <Button onClick={() => { setDeleteDialogOpen(false); setSelectedUser(null); }}>Annulla</Button>
           <Button onClick={handleDeleteConfirm} color="error" variant="contained" autoFocus>
             Elimina
           </Button>
