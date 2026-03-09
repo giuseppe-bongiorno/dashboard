@@ -16,7 +16,6 @@ import {
   Divider,
   Badge,
   Avatar,
-  Alert,
   CircularProgress,
   Autocomplete,
   FormControlLabel,
@@ -329,7 +328,7 @@ const ThreadListItem: React.FC<ThreadListItemProps> = ({
   onClick,
 }) => {
   const theme = useTheme();
-  const { parentMessage, lastMessage, replyCount, hasUnread } = thread;
+  const { parentMessage, lastMessage, hasUnread } = thread;
 
   // Determine the other party's name via the userNameMap lookup
   const otherPartyId =
