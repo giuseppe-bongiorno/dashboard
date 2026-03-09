@@ -666,20 +666,21 @@ const ChatView: React.FC<ChatViewProps> = ({
         <TextField
           fullWidth
           multiline
-          maxRows={4}
+          minRows={3}
+          maxRows={8}
           placeholder="Scrivi un messaggio..."
           value={replyText}
           onChange={(e) => setReplyText(e.target.value)}
           onKeyDown={handleKeyDown}
-          size="small"
           disabled={sending}
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
+              borderRadius: 2,
               bgcolor: 'background.paper',
               fontSize: '0.9rem',
-              '& fieldset': { borderColor: 'transparent' },
-              '&:hover fieldset': { borderColor: 'divider' },
+              lineHeight: 1.5,
+              '& fieldset': { borderColor: 'divider' },
+              '&:hover fieldset': { borderColor: 'text.secondary' },
               '&.Mui-focused fieldset': {
                 borderColor: 'primary.main',
                 borderWidth: 1,
