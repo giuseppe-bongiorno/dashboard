@@ -1,6 +1,7 @@
 import apiClient, { apiRequest } from './api';
 import { ApiResponse } from '@/types';
 
+
 // Types
 export interface Messaggio {
   id: number;
@@ -48,10 +49,53 @@ export interface UserListDTO {
   enabled: boolean;
 }
 
+// Helper per ricostruire l'albero dalla lista piatta
+const buildMessageTree = (flatList: Messaggio[]): Messaggio[] => {
+  if (!flatList || flatList.length === 0) return [];
+
+  const messageMap = new Map<number, Messaggio>();
+  const rootMessages: Messaggio[] = [];
+
+  flatList.forEach(msg => {
+    messageMap.set(msg.id, { ...msg, risposte: [] });
+  });
+
+  flatList.forEach(msg => {
+    const currentMsg = messageMap.get(msg.id)!;
+    if (msg.messaggioPadreId && messageMap.has(msg.messaggioPadreId)) {
+      const parent = messageMap.get(msg.messaggioPadreId)!;
+      parent.risposte!.push(currentMsg);
+    } else {
+      rootMessages.push(currentMsg);
+    }
+  });
+
+  // Funzione ricorsiva per ordinare per data
+  const sortByDate = (a: Messaggio, b: Messaggio) => 
+    new Date(a.dataInvio).getTime() - new Date(b.dataInvio).getTime();
+
+  rootMessages.sort(sortByDate);
+  rootMessages.forEach(root => {
+    if (root.risposte) root.risposte.sort(sortByDate);
+  });
+
+  return rootMessages;
+};
+
+// Helper per appiattire l'albero in lista cronologica (per la chat view)
+export const flattenThread = (message: Messaggio): Messaggio[] => {
+  let flat: Messaggio[] = [message];
+  if (message.risposte && message.risposte.length > 0) {
+    message.risposte.forEach(reply => {
+      flat = flat.concat(flattenThread(reply));
+    });
+  }
+  return flat.sort((a, b) => new Date(a.dataInvio).getTime() - new Date(b.dataInvio).getTime());
+};
+
 export const messaggiService = {
   /**
    * Get all messages for a user (by destinatarioId)
-   * Maps to: GET /api/v1/messaggi/destinatario/{destinatarioId}
    */
   getMessaggi: async (destinatarioId: number): Promise<ApiResponse<Messaggio[]>> => {
     return apiRequest<Messaggio[]>(async () => {
@@ -62,20 +106,16 @@ export const messaggiService = {
 
   /**
    * Get unread message count
-   * Maps to: GET /api/v1/messaggi/destinatario/{destinatarioId}/conteggio-non-letti
-   * Backend returns Long directly, we wrap it in an object for consistency
    */
   getUnreadCount: async (destinatarioId: number): Promise<ApiResponse<{ count: number }>> => {
     return apiRequest<{ count: number }>(async () => {
       const response = await apiClient.get(`/api/v1/messaggi/destinatario/${destinatarioId}/conteggio-non-letti`);
-      // Backend returns a Long directly, wrap it
       return { data: { count: response.data } };
     });
   },
 
   /**
    * Create new message
-   * Maps to: POST /api/v1/messaggi
    */
   sendMessaggio: async (data: CreaMessaggioRequest): Promise<ApiResponse<Messaggio>> => {
     return apiRequest<Messaggio>(async () => {
@@ -86,7 +126,6 @@ export const messaggiService = {
 
   /**
    * Reply to a message
-   * Maps to: POST /api/v1/messaggi/rispondi
    */
   sendRisposta: async (data: RispondiMessaggioRequest): Promise<ApiResponse<Messaggio>> => {
     return apiRequest<Messaggio>(async () => {
@@ -97,7 +136,6 @@ export const messaggiService = {
 
   /**
    * Mark message as read
-   * Maps to: PUT /api/v1/messaggi/dettaglio/{messaggioId}/segna-letto
    */
   markMessaggioAsRead: async (messaggioId: number): Promise<ApiResponse<void>> => {
     return apiRequest<void>(async () => {
@@ -108,39 +146,27 @@ export const messaggiService = {
 
   /**
    * Get message thread (message + replies)
-   * Maps to: GET /api/v1/messaggi/dettaglio/{messaggioId}/thread
-   * 
-   * IMPORTANT: Backend returns List<MessaggioResponse>, not a single message
-   * We need to reconstruct the thread structure on the frontend
+   * Ricostruisce l'albero dalla lista piatta ricevuta dal backend
    */
-  getMessaggioThread: async (messaggioId: number): Promise<ApiResponse<Messaggio>> => {
-    return apiRequest<Messaggio>(async () => {
-      const response = await apiClient.get(`/api/v1/messaggi/dettaglio/${messaggioId}/thread`);
-      
-      // Backend returns an array of messages in the thread
-      // First message is the parent, rest are replies
-      const thread = response.data as Messaggio[];
-      
-      if (thread.length === 0) {
-        throw new Error('Thread vuoto');
-      }
-      
-      // Reconstruct the message with replies
-      const parentMessage = thread[0];
-      const replies = thread.slice(1);
-      
-      return {
-        data: {
-          ...parentMessage,
-          risposte: replies
-        }
-      };
+   getMessaggioThread: async (messaggioId: number): Promise<ApiResponse<Messaggio[]>> => {
+  return apiRequest<Messaggio[]>(async () => {
+
+    const response = await apiClient.get<Messaggio[]>(
+      `/api/v1/messaggi/dettaglio/${messaggioId}/thread`
+    );
+
+    const messages = response.data.sort(
+      (a, b) =>
+        new Date(a.dataInvio).getTime() -
+        new Date(b.dataInvio).getTime()
+    );
+
+    return { data: messages };
     });
   },
 
   /**
    * Delete message
-   * Maps to: DELETE /api/v1/messaggi/dettaglio/{messaggioId}
    */
   eliminaMessaggio: async (messageId: number): Promise<ApiResponse<void>> => {
     return apiRequest<void>(async () => {
@@ -150,9 +176,7 @@ export const messaggiService = {
   },
 
   /**
-   * Get all active users (for recipient selection)
-   * Maps to: GET /api/v1/users
-   * Returns users sorted by username
+   * Get all active users
    */
   getUtenti: async (): Promise<ApiResponse<UserListDTO[]>> => {
     return apiRequest<UserListDTO[]>(async () => {
@@ -163,7 +187,6 @@ export const messaggiService = {
 
   /**
    * Get all users including disabled ones (ADMIN only)
-   * Maps to: GET /api/v1/users/all
    */
   getAllUtenti: async (): Promise<ApiResponse<UserListDTO[]>> => {
     return apiRequest<UserListDTO[]>(async () => {
@@ -174,7 +197,6 @@ export const messaggiService = {
 
   /**
    * Get single message by ID
-   * Maps to: GET /api/v1/messaggi/dettaglio/{messaggioId}
    */
   getMessaggioById: async (messaggioId: number): Promise<ApiResponse<Messaggio>> => {
     return apiRequest<Messaggio>(async () => {
@@ -184,8 +206,7 @@ export const messaggiService = {
   },
 
   /**
-   * Get messages sent by a user (as mittente)
-   * Maps to: GET /api/v1/messaggi/mittente/{mittenteId}
+   * Get messages sent by a user
    */
   getMessaggiInviati: async (mittenteId: number): Promise<ApiResponse<Messaggio[]>> => {
     return apiRequest<Messaggio[]>(async () => {
