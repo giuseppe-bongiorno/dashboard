@@ -76,24 +76,29 @@ export const tokenManager = {
 // Request interceptor - Add auth token and Correlation ID
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // 1. Aggiunge il Token di autenticazione
+    // 1. Aggiunge il Token di autenticazione (logica esistente)
     const token = tokenManager.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    /*** MODIFICA AUDIT - INIZIO ***/
-    // 2. Aggiunge il Correlation ID per la tracciabilità
-    // Usiamo crypto.randomUUID() per generare uno standard UUID v4
-    // compatibile con i log del backend Java.
+    // 2. Logica Correlation ID - VERSIONE SESSIONE
     if (config.headers) {
-      const correlationId = crypto.randomUUID();
+      // Cerca se esiste già un ID salvato nella sessione del browser
+      let correlationId = sessionStorage.getItem('correlation_id');
+      
+      // Se non c'è, ne genera uno nuovo e lo salva
+      if (!correlationId) {
+        correlationId = crypto.randomUUID();
+        sessionStorage.setItem('correlation_id', correlationId);
+      }
+      
+      // Aggiunge l'header (sarà sempre lo stesso finché non chiudi il tab)
       config.headers['X-Correlation-ID'] = correlationId;
       
-      // Opzionale: salva in window per debug immediato in console
+      // Opzionale: Debug
       (window as any).lastCorrelationId = correlationId;
     }
-    /*** MODIFICA AUDIT - FINE ***/
     
     return config;
   },
