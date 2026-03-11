@@ -3,10 +3,7 @@ import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'ax
 import { ApiResponse, ApiError } from '@/types';
 
 // API Configuration
-
-//const API_BASE_URL = ''; // Empty to use Vite proxy
-//const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://test.myfamilydoc.it:443';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''; // ✅ pulito e dev/prod compatibile
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''; 
 
 const TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -15,7 +12,7 @@ const REFRESH_TOKEN_KEY = 'refresh_token';
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
-  withCredentials: true, // Include credentials for CORS
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -76,18 +73,27 @@ export const tokenManager = {
   },
 };
 
-// Request interceptor - Add auth token
+// Request interceptor - Add auth token and Correlation ID
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // 1. Aggiunge il Token di autenticazione
     const token = tokenManager.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Add X-Correlation-ID header for all requests
-    if (config.headers && !config.headers['X-Correlation-ID']) {
-      config.headers['X-Correlation-ID'] = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    /*** MODIFICA AUDIT - INIZIO ***/
+    // 2. Aggiunge il Correlation ID per la tracciabilità
+    // Usiamo crypto.randomUUID() per generare uno standard UUID v4
+    // compatibile con i log del backend Java.
+    if (config.headers) {
+      const correlationId = crypto.randomUUID();
+      config.headers['X-Correlation-ID'] = correlationId;
+      
+      // Opzionale: salva in window per debug immediato in console
+      (window as any).lastCorrelationId = correlationId;
     }
+    /*** MODIFICA AUDIT - FINE ***/
     
     return config;
   },
