@@ -107,6 +107,29 @@ export const userManagementService = {
       return response;
     });
   },
+
+  /**
+   * Ripristina un utente eliminato (soft-delete).
+   * Maps to: PUT /api/admin/users/{userId}/restore
+   */
+  restoreUser: async (userId: number): Promise<ApiResponse<void>> => {
+    return apiRequest<void>(async () => {
+      const response = await apiClient.put(`/api/admin/users/${userId}/restore`);
+      return response;
+    });
+  },
+
+  /**
+   * Anonimizza definitivamente un utente (GDPR Art. 17).
+   * Maps to: PUT /api/admin/users/{userId}/anonymize
+   * ATTENZIONE: Operazione irreversibile.
+   */
+  anonymizeUser: async (userId: number): Promise<ApiResponse<void>> => {
+    return apiRequest<void>(async () => {
+      const response = await apiClient.put(`/api/admin/users/${userId}/anonymize`);
+      return response;
+    });
+  },
 };
 
 export default userManagementService;

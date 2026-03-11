@@ -17,6 +17,7 @@ export interface UserManagement {
   role: UserRole;
   enabled: boolean;
   emailVerified: boolean;
+  anonymized?: boolean;
   lastLoginAt?: string;
   lastLoginIp?: string;
   createdAt: string;
