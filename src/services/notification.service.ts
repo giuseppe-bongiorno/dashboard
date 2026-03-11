@@ -25,7 +25,28 @@ export interface TestNotificationResponse {
   devicesCount: number;
 }
 
+export interface NotificationHistoryItem {
+  id: number;
+  user: string;
+  title: string;
+  body: string;
+  status: string;
+  timestamp: string;
+  devices: number;
+}
+
 export const notificationService = {
+  /**
+   * Get notification history from push_notification_log.
+   * Maps to: GET /api/admin/dashboard/notification-history
+   */
+  getNotificationHistory: async (limit: number = 50): Promise<ApiResponse<NotificationHistoryItem[]>> => {
+    return apiRequest<NotificationHistoryItem[]>(async () => {
+      const response = await apiClient.get(`/api/admin/dashboard/notification-history?limit=${limit}`);
+      return { data: response.data.data };
+    });
+  },
+
   /**
    * Send push notification to specific user
    * Maps to: POST /api/v1/notifications/send
