@@ -41,7 +41,7 @@ import {
   Person,
 } from '@mui/icons-material';
 import { useAppSelector, useNotification } from '@/hooks';
-import notificationService, { NotificationRequest } from '@/services/notification.service';
+import notificationService, { NotificationRequest, NotificationHistoryItem } from '@/services/notification.service';
 import messaggiService, { UserListDTO } from '@/services/messaggi.service';
 
 const AdminNotificationsPage: React.FC = () => {
@@ -66,19 +66,29 @@ const AdminNotificationsPage: React.FC = () => {
   const [userBadgeCount, setUserBadgeCount] = useState<number | null>(null);
   const [loadingBadge, setLoadingBadge] = useState(false);
 
-  // Notification history (mock - you can implement real history)
-  const [notificationHistory, setNotificationHistory] = useState<Array<{
-    id: number;
-    user: string;
-    title: string;
-    timestamp: Date;
-    devices: number;
-  }>>([]);
+  // Notification history (from push_notification_log DB)
+  const [notificationHistory, setNotificationHistory] = useState<NotificationHistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Load users on mount
+  // Load users and history on mount
   useEffect(() => {
     loadUtenti();
+    loadNotificationHistory();
   }, []);
+
+  const loadNotificationHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const response = await notificationService.getNotificationHistory(50);
+      if (response.success && response.data) {
+        setNotificationHistory(response.data);
+      }
+    } catch (error) {
+      console.error('Errore caricamento cronologia notifiche:', error);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const loadUtenti = async () => {
     try {
@@ -128,17 +138,8 @@ const AdminNotificationsPage: React.FC = () => {
           }`
         );
 
-        // Add to history
-        setNotificationHistory(prev => [
-          {
-            id: Date.now(),
-            user: selectedUser.displayName,
-            title: title,
-            timestamp: new Date(),
-            devices: response.data?.devicesCount ?? 0,
-          },
-          ...prev.slice(0, 9), // Keep only last 10
-        ]);
+        // Ricarica cronologia dal DB
+        await loadNotificationHistory();
 
         // Reset form
         setTitle('');
@@ -243,7 +244,7 @@ const AdminNotificationsPage: React.FC = () => {
           >
             Notifica di Test
           </Button>
-          <Button variant="outlined" startIcon={<Refresh />} onClick={loadUtenti}>
+          <Button variant="outlined" startIcon={<Refresh />} onClick={() => { loadUtenti(); loadNotificationHistory(); }}>
             Aggiorna
           </Button>
         </Stack>
@@ -418,9 +419,13 @@ const AdminNotificationsPage: React.FC = () => {
               </Stack>
               <Divider sx={{ mb: 2 }} />
 
-              {notificationHistory.length === 0 ? (
+              {loadingHistory ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : notificationHistory.length === 0 ? (
                 <Alert severity="info">
-                  Nessuna notifica inviata in questa sessione
+                  Nessuna notifica inviata
                 </Alert>
               ) : (
                 <List>
@@ -454,7 +459,7 @@ const AdminNotificationsPage: React.FC = () => {
                                 />
                               </Stack>
                               <Typography variant="caption" color="text.secondary">
-                                {item.timestamp.toLocaleString('it-IT')}
+                                {new Date(item.timestamp).toLocaleString('it-IT')}
                               </Typography>
                             </>
                           }
@@ -479,7 +484,7 @@ const AdminNotificationsPage: React.FC = () => {
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" color="text.secondary">
-                    Notifiche inviate (sessione)
+                    Notifiche inviate
                   </Typography>
                   <Typography variant="body2" fontWeight={600}>
                     {notificationHistory.length}
