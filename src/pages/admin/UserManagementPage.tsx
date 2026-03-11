@@ -333,7 +333,12 @@ const UserManagementPage: React.FC = () => {
             Gestisci tutti gli utenti registrati sulla piattaforma
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<PersonAdd />} color="primary">
+        <Button 
+          variant="contained" 
+          startIcon={<PersonAdd />} 
+          color="primary"
+          onClick={() => showError('Funzionalità da implementare')}
+        >
           Nuovo Utente
         </Button>
       </Box>
@@ -475,7 +480,11 @@ const UserManagementPage: React.FC = () => {
               >
                 Aggiorna
               </Button>
-              <Button variant="outlined" startIcon={<CloudDownload />}>
+              <Button 
+                variant="outlined" 
+                startIcon={<CloudDownload />}
+                onClick={() => showError('Funzionalità da implementare')}
+              >
                 Esporta
               </Button>
             </Box>
@@ -551,11 +560,21 @@ const UserManagementPage: React.FC = () => {
                   </TableCell>
                   <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell align="right">
-                    <Tooltip title="Azioni">
-                      <IconButton onClick={(e) => handleMenuOpen(e, user)}>
-                        <MoreVert />
-                      </IconButton>
-                    </Tooltip>
+                    {user.deletedAt ? (
+                      <Tooltip title="Utente eliminato - nessuna azione disponibile">
+                        <span>
+                          <IconButton disabled>
+                            <MoreVert />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip title="Azioni">
+                        <IconButton onClick={(e) => handleMenuOpen(e, user)}>
+                          <MoreVert />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
