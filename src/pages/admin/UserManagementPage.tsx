@@ -48,6 +48,8 @@ import {
   PersonOff,
   VerifiedUser,
   SwapHoriz,
+  RestoreFromTrash,
+  PrivacyTip,
 } from '@mui/icons-material';
 import { useDocumentTitle, useNotification } from '@/hooks';
 import { ROLE_DISPLAY_NAMES, UserRole, UserManagement, UserFilters, UserStats } from '@/types';
@@ -77,6 +79,7 @@ const UserManagementPage: React.FC = () => {
   // Dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeRoleDialogOpen, setChangeRoleDialogOpen] = useState(false);
+  const [anonymizeDialogOpen, setAnonymizeDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<UserRole>('USER');
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -269,6 +272,54 @@ const UserManagementPage: React.FC = () => {
       }
     } catch (error) {
       showError('Errore durante l\'eliminazione dell\'utente');
+    } finally {
+      setActionLoading(false);
+      setSelectedUser(null);
+    }
+  };
+
+  const handleRestoreUser = async () => {
+    if (!selectedUser) return;
+    const userId = Number(selectedUser.id);
+    setActionLoading(true);
+    handleMenuClose();
+
+    try {
+      const response = await userManagementService.restoreUser(userId);
+      if (response.success) {
+        showSuccess('Utente ripristinato con successo');
+        fetchData();
+      } else {
+        showError(response.error?.message || 'Errore durante il ripristino');
+      }
+    } catch (error) {
+      showError('Errore durante il ripristino dell\'utente');
+    } finally {
+      setActionLoading(false);
+      setSelectedUser(null);
+    }
+  };
+
+  const handleAnonymizeClick = () => {
+    handleMenuClose();
+    setAnonymizeDialogOpen(true);
+  };
+
+  const handleAnonymizeConfirm = async () => {
+    if (!selectedUser) return;
+    setActionLoading(true);
+    setAnonymizeDialogOpen(false);
+
+    try {
+      const response = await userManagementService.anonymizeUser(Number(selectedUser.id));
+      if (response.success) {
+        showSuccess('Utente anonimizzato definitivamente');
+        fetchData();
+      } else {
+        showError(response.error?.message || 'Errore durante l\'anonimizzazione');
+      }
+    } catch (error) {
+      showError('Errore durante l\'anonimizzazione dell\'utente');
     } finally {
       setActionLoading(false);
       setSelectedUser(null);
@@ -535,7 +586,9 @@ const UserManagementPage: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell>
-                    {user.deletedAt ? (
+                    {user.anonymized ? (
+                      <Chip label="Anonimizzato" color="default" size="small" icon={<PrivacyTip />} sx={{ bgcolor: 'grey.300' }} />
+                    ) : user.deletedAt ? (
                       <Chip label="Eliminato" color="error" size="small" icon={<Delete />} />
                     ) : user.enabled ? (
                       <Chip label="Attivo" color="success" size="small" icon={<CheckCircle />} />
@@ -560,21 +613,11 @@ const UserManagementPage: React.FC = () => {
                   </TableCell>
                   <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell align="right">
-                    {user.deletedAt ? (
-                      <Tooltip title="Utente eliminato - nessuna azione disponibile">
-                        <span>
-                          <IconButton disabled>
-                            <MoreVert />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip title="Azioni">
-                        <IconButton onClick={(e) => handleMenuOpen(e, user)}>
-                          <MoreVert />
-                        </IconButton>
-                      </Tooltip>
-                    )}
+                    <Tooltip title="Azioni">
+                      <IconButton onClick={(e) => handleMenuOpen(e, user)}>
+                        <MoreVert />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
@@ -597,29 +640,49 @@ const UserManagementPage: React.FC = () => {
 
       {/* Action Menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => { setAnchorEl(null); setSelectedUser(null); }}>
-        {selectedUser?.enabled ? (
-          <MenuItem onClick={handleDisableUser}>
-            <Cancel sx={{ mr: 1 }} /> Disabilita Utente
+        {selectedUser?.anonymized ? (
+          // ── Utente anonimizzato: nessuna azione ──
+          <MenuItem disabled>
+            <PrivacyTip sx={{ mr: 1, color: 'text.disabled' }} /> Utente anonimizzato - nessuna azione
           </MenuItem>
+        ) : selectedUser?.deletedAt ? (
+          // ── Menu per utenti eliminati ──
+          [
+            <MenuItem key="restore" onClick={handleRestoreUser}>
+              <RestoreFromTrash sx={{ mr: 1 }} /> Ripristina Utente
+            </MenuItem>,
+            <MenuItem key="anonymize" onClick={handleAnonymizeClick} sx={{ color: 'error.main' }}>
+              <PrivacyTip sx={{ mr: 1 }} /> Anonimizza (GDPR)
+            </MenuItem>,
+          ]
         ) : (
-          <MenuItem onClick={handleEnableUser}>
-            <CheckCircle sx={{ mr: 1 }} /> Abilita Utente
-          </MenuItem>
+          // ── Menu per utenti attivi/disabilitati ──
+          [
+            selectedUser?.enabled ? (
+              <MenuItem key="disable" onClick={handleDisableUser}>
+                <Cancel sx={{ mr: 1 }} /> Disabilita Utente
+              </MenuItem>
+            ) : (
+              <MenuItem key="enable" onClick={handleEnableUser}>
+                <CheckCircle sx={{ mr: 1 }} /> Abilita Utente
+              </MenuItem>
+            ),
+            !selectedUser?.emailVerified && (
+              <MenuItem key="verify" onClick={handleVerifyEmail}>
+                <Email sx={{ mr: 1 }} /> Verifica Email
+              </MenuItem>
+            ),
+            <MenuItem key="role" onClick={handleChangeRoleClick}>
+              <SwapHoriz sx={{ mr: 1 }} /> Cambia Ruolo
+            </MenuItem>,
+            <MenuItem key="reset" onClick={handleResetPassword}>
+              <Key sx={{ mr: 1 }} /> Reset Password
+            </MenuItem>,
+            <MenuItem key="delete" onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+              <Delete sx={{ mr: 1 }} /> Elimina Utente
+            </MenuItem>,
+          ]
         )}
-        {!selectedUser?.emailVerified && (
-          <MenuItem onClick={handleVerifyEmail}>
-            <Email sx={{ mr: 1 }} /> Verifica Email
-          </MenuItem>
-        )}
-        <MenuItem onClick={handleChangeRoleClick}>
-          <SwapHoriz sx={{ mr: 1 }} /> Cambia Ruolo
-        </MenuItem>
-        <MenuItem onClick={handleResetPassword}>
-          <Key sx={{ mr: 1 }} /> Reset Password
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-          <Delete sx={{ mr: 1 }} /> Elimina Utente
-        </MenuItem>
       </Menu>
 
       {/* Change Role Dialog */}
@@ -694,6 +757,32 @@ const UserManagementPage: React.FC = () => {
           <Button onClick={() => { setDeleteDialogOpen(false); setSelectedUser(null); }}>Annulla</Button>
           <Button onClick={handleDeleteConfirm} color="error" variant="contained" autoFocus>
             Elimina
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Anonymize Confirmation Dialog */}
+      <Dialog open={anonymizeDialogOpen} onClose={() => { setAnonymizeDialogOpen(false); setSelectedUser(null); }}>
+        <DialogTitle sx={{ color: 'error.main' }}>
+          ⚠️ Anonimizzazione Definitiva (GDPR Art. 17)
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Stai per anonimizzare definitivamente l'utente <strong>{selectedUser?.username}</strong>.
+          </DialogContentText>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            <strong>ATTENZIONE: Questa operazione è IRREVERSIBILE.</strong>
+            <br />
+            Tutti i dati personali (username, email, password, IP) verranno sovrascritti con valori anonimi.
+            Il record resterà nel database per integrità referenziale e audit, ma non sarà più riconducibile alla persona.
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setAnonymizeDialogOpen(false); setSelectedUser(null); }}>
+            Annulla
+          </Button>
+          <Button onClick={handleAnonymizeConfirm} color="error" variant="contained">
+            Conferma Anonimizzazione
           </Button>
         </DialogActions>
       </Dialog>
