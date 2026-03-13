@@ -11,6 +11,9 @@ import TelegramSenderPage from '@/pages/admin/TelegramSenderPage';
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import UserManagementPage from '@/pages/admin/UserManagementPage';
 import DashboardPage from '@/pages/DashboardPage';
+import UserDashboardPage from '@/pages/user/UserDashboardPage';
+import DeveloperDashboardPage from '@/pages/dev/DeveloperDashboardPage';
+import DoctorDashboardPage from '@/pages/doc/DoctorDashboardPage';
 // Public Pages
 import LoginPage from '@/pages/LoginPage';
 import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
@@ -96,7 +99,7 @@ export const multiRoleRouter = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <DeveloperDashboardPage />,
       },
       {
         path: 'api',
@@ -142,7 +145,7 @@ export const multiRoleRouter = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <DoctorDashboardPage />,
       },
       {
         path: 'patients',
@@ -188,7 +191,7 @@ export const multiRoleRouter = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <UserDashboardPage />,
       },
       {
         path: 'documents',
