@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Grid, Card, CardContent, Avatar, Chip, Alert } from '@mui/material';
+import { Box, Typography, Paper, Grid, Card, CardContent, Avatar, Alert } from '@mui/material';
 import { People, CalendarToday, Description, LocalHospital } from '@mui/icons-material';
 import { useAppSelector, useDocumentTitle } from '@/hooks';
 
