@@ -14,6 +14,7 @@ import DashboardPage from '@/pages/DashboardPage';
 import UserDashboardPage from '@/pages/user/UserDashboardPage';
 import DeveloperDashboardPage from '@/pages/dev/DeveloperDashboardPage';
 import DoctorDashboardPage from '@/pages/doc/DoctorDashboardPage';
+import UserProfilePage from '@/pages/user/UserProfilePage';
 // Public Pages
 import LoginPage from '@/pages/LoginPage';
 import { NotFoundPage, ServerErrorPage } from '@/pages/ErrorPages';
@@ -207,7 +208,7 @@ export const multiRoleRouter = createBrowserRouter([
       },
       {
         path: 'profile',
-        element: <DashboardPage />,
+        element: <UserProfilePage />,
       },
       {
         path: 'settings',

@@ -294,7 +294,7 @@ const UserDashboardPage: React.FC = () => {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" fontWeight={600} gutterBottom>
-            Bentornato, {user?.firstName || 'Utente'}!
+            Bentornato, {user?.firstName || user?.email || 'Utente'}!
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Ecco un riepilogo della tua salute
